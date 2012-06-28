@@ -147,8 +147,9 @@ function htmLawed($html, $config = 1, $spec = array()) {
 		$html = preg_replace_callback('`<!(?:(?:--.*?--)|(?:\[CDATA\[.*?\]\]))>`sm', 'hl_cmtcd', $html);
 	}
 
+	//HTML Entities
 	$html = preg_replace_callback('@&amp;([A-Za-z][A-Za-z0-9]{1,30}|#(?:[0-9]{1,8}|[Xx][0-9A-Fa-f]{1,7}));@', 'hl_ent', str_replace('&', '&amp;', $html));
-echo "<br />after hl_ent<br />";die;
+
 	if ($config['unique_ids'] && !isset($GLOBALS['hl_Ids'])) {
 		$GLOBALS['hl_Ids'] = array();
 	}
@@ -206,156 +207,158 @@ return ($o ? $t : (isset($p['default']) ? $p['default'] : 0));
 // eof
 }
 
-function hl_bal($t, $do=1, $in='div'){
-// balance tags
-// by content
-$cB = array('blockquote'=>1, 'form'=>1, 'map'=>1, 'noscript'=>1); // Block
-$cE = array('area'=>1, 'br'=>1, 'col'=>1, 'embed'=>1, 'hr'=>1, 'img'=>1, 'input'=>1, 'isindex'=>1, 'param'=>1); // Empty
-$cF = array('button'=>1, 'del'=>1, 'div'=>1, 'dd'=>1, 'fieldset'=>1, 'iframe'=>1, 'ins'=>1, 'li'=>1, 'noscript'=>1, 'object'=>1, 'td'=>1, 'th'=>1); // Flow; later context-wise dynamic move of ins & del to $cI
-$cI = array('a'=>1, 'abbr'=>1, 'acronym'=>1, 'address'=>1, 'b'=>1, 'bdo'=>1, 'big'=>1, 'caption'=>1, 'cite'=>1, 'code'=>1, 'dfn'=>1, 'dt'=>1, 'em'=>1, 'font'=>1, 'h1'=>1, 'h2'=>1, 'h3'=>1, 'h4'=>1, 'h5'=>1, 'h6'=>1, 'i'=>1, 'kbd'=>1, 'label'=>1, 'legend'=>1, 'p'=>1, 'pre'=>1, 'q'=>1, 'rb'=>1, 'rt'=>1, 's'=>1, 'samp'=>1, 'small'=>1, 'span'=>1, 'strike'=>1, 'strong'=>1, 'sub'=>1, 'sup'=>1, 'tt'=>1, 'u'=>1, 'var'=>1); // Inline
-$cN = array('a'=>array('a'=>1), 'button'=>array('a'=>1, 'button'=>1, 'fieldset'=>1, 'form'=>1, 'iframe'=>1, 'input'=>1, 'label'=>1, 'select'=>1, 'textarea'=>1), 'fieldset'=>array('fieldset'=>1), 'form'=>array('form'=>1), 'label'=>array('label'=>1), 'noscript'=>array('script'=>1), 'pre'=>array('big'=>1, 'font'=>1, 'img'=>1, 'object'=>1, 'script'=>1, 'small'=>1, 'sub'=>1, 'sup'=>1), 'rb'=>array('ruby'=>1), 'rt'=>array('ruby'=>1)); // Illegal
-$cN2 = array_keys($cN);
-$cR = array('blockquote'=>1, 'dir'=>1, 'dl'=>1, 'form'=>1, 'map'=>1, 'menu'=>1, 'noscript'=>1, 'ol'=>1, 'optgroup'=>1, 'rbc'=>1, 'rtc'=>1, 'ruby'=>1, 'select'=>1, 'table'=>1, 'tbody'=>1, 'tfoot'=>1, 'thead'=>1, 'tr'=>1, 'ul'=>1);
-$cS = array('colgroup'=>array('col'=>1), 'dir'=>array('li'=>1), 'dl'=>array('dd'=>1, 'dt'=>1), 'menu'=>array('li'=>1), 'ol'=>array('li'=>1), 'optgroup'=>array('option'=>1), 'option'=>array('#pcdata'=>1), 'rbc'=>array('rb'=>1), 'rp'=>array('#pcdata'=>1), 'rtc'=>array('rt'=>1), 'ruby'=>array('rb'=>1, 'rbc'=>1, 'rp'=>1, 'rt'=>1, 'rtc'=>1), 'select'=>array('optgroup'=>1, 'option'=>1), 'script'=>array('#pcdata'=>1), 'table'=>array('caption'=>1, 'col'=>1, 'colgroup'=>1, 'tfoot'=>1, 'tbody'=>1, 'tr'=>1, 'thead'=>1), 'tbody'=>array('tr'=>1), 'tfoot'=>array('tr'=>1), 'textarea'=>array('#pcdata'=>1), 'thead'=>array('tr'=>1), 'tr'=>array('td'=>1, 'th'=>1), 'ul'=>array('li'=>1)); // Specific - immediate parent-child
-if($GLOBALS['config']['direct_list_nest']){$cS['ol'] = $cS['ul'] += array('ol'=>1, 'ul'=>1);}
-$cO = array('address'=>array('p'=>1), 'applet'=>array('param'=>1), 'blockquote'=>array('script'=>1), 'fieldset'=>array('legend'=>1, '#pcdata'=>1), 'form'=>array('script'=>1), 'map'=>array('area'=>1), 'object'=>array('param'=>1, 'embed'=>1)); // Other
-$cT = array('colgroup'=>1, 'dd'=>1, 'dt'=>1, 'li'=>1, 'option'=>1, 'p'=>1, 'td'=>1, 'tfoot'=>1, 'th'=>1, 'thead'=>1, 'tr'=>1); // Omitable closing
-// block/inline type; ins & del both type; #pcdata: text
-$eB = array('address'=>1, 'blockquote'=>1, 'center'=>1, 'del'=>1, 'dir'=>1, 'dl'=>1, 'div'=>1, 'fieldset'=>1, 'form'=>1, 'ins'=>1, 'h1'=>1, 'h2'=>1, 'h3'=>1, 'h4'=>1, 'h5'=>1, 'h6'=>1, 'hr'=>1, 'isindex'=>1, 'menu'=>1, 'noscript'=>1, 'ol'=>1, 'p'=>1, 'pre'=>1, 'table'=>1, 'ul'=>1);
-$eI = array('#pcdata'=>1, 'a'=>1, 'abbr'=>1, 'acronym'=>1, 'applet'=>1, 'b'=>1, 'bdo'=>1, 'big'=>1, 'br'=>1, 'button'=>1, 'cite'=>1, 'code'=>1, 'del'=>1, 'dfn'=>1, 'em'=>1, 'embed'=>1, 'font'=>1, 'i'=>1, 'iframe'=>1, 'img'=>1, 'input'=>1, 'ins'=>1, 'kbd'=>1, 'label'=>1, 'map'=>1, 'object'=>1, 'q'=>1, 'ruby'=>1, 's'=>1, 'samp'=>1, 'select'=>1, 'script'=>1, 'small'=>1, 'span'=>1, 'strike'=>1, 'strong'=>1, 'sub'=>1, 'sup'=>1, 'textarea'=>1, 'tt'=>1, 'u'=>1, 'var'=>1);
-$eN = array('a'=>1, 'big'=>1, 'button'=>1, 'fieldset'=>1, 'font'=>1, 'form'=>1, 'iframe'=>1, 'img'=>1, 'input'=>1, 'label'=>1, 'object'=>1, 'ruby'=>1, 'script'=>1, 'select'=>1, 'small'=>1, 'sub'=>1, 'sup'=>1, 'textarea'=>1); // Exclude from specific ele; $cN values
-$eO = array('area'=>1, 'caption'=>1, 'col'=>1, 'colgroup'=>1, 'dd'=>1, 'dt'=>1, 'legend'=>1, 'li'=>1, 'optgroup'=>1, 'option'=>1, 'param'=>1, 'rb'=>1, 'rbc'=>1, 'rp'=>1, 'rt'=>1, 'rtc'=>1, 'script'=>1, 'tbody'=>1, 'td'=>1, 'tfoot'=>1, 'thead'=>1, 'th'=>1, 'tr'=>1); // Missing in $eB & $eI
-$eF = $eB + $eI;
+function hl_bal($html, $do = 1, $in = 'div') {
+	// balance tags
+	// by content
+	$block = array('blockquote' => 1, 'form' => 1, 'map' => 1, 'noscript' => 1); // Block
+	$empty = array('area'=>1, 'br'=>1, 'col'=>1, 'embed'=>1, 'hr'=>1, 'img'=>1, 'input'=>1, 'isindex'=>1, 'param'=>1); // Empty
+	$flow = array('button'=>1, 'del'=>1, 'div'=>1, 'dd'=>1, 'fieldset'=>1, 'iframe'=>1, 'ins'=>1, 'li'=>1, 'noscript'=>1, 'object'=>1, 'td'=>1, 'th'=>1); // Flow; later context-wise dynamic move of ins & del to $inline
+	$inline = array('a'=>1, 'abbr'=>1, 'acronym'=>1, 'address'=>1, 'b'=>1, 'bdo'=>1, 'big'=>1, 'caption'=>1, 'cite'=>1, 'code'=>1, 'dfn'=>1, 'dt'=>1, 'em'=>1, 'font'=>1, 'h1'=>1, 'h2'=>1, 'h3'=>1, 'h4'=>1, 'h5'=>1, 'h6'=>1, 'i'=>1, 'kbd'=>1, 'label'=>1, 'legend'=>1, 'p'=>1, 'pre'=>1, 'q'=>1, 'rb'=>1, 'rt'=>1, 's'=>1, 'samp'=>1, 'small'=>1, 'span'=>1, 'strike'=>1, 'strong'=>1, 'sub'=>1, 'sup'=>1, 'tt'=>1, 'u'=>1, 'var'=>1); // Inline
+	$illegal = array('a'=>array('a'=>1), 'button'=>array('a'=>1, 'button'=>1, 'fieldset'=>1, 'form'=>1, 'iframe'=>1, 'input'=>1, 'label'=>1, 'select'=>1, 'textarea'=>1), 'fieldset'=>array('fieldset'=>1), 'form'=>array('form'=>1), 'label'=>array('label'=>1), 'noscript'=>array('script'=>1), 'pre'=>array('big'=>1, 'font'=>1, 'img'=>1, 'object'=>1, 'script'=>1, 'small'=>1, 'sub'=>1, 'sup'=>1), 'rb'=>array('ruby'=>1), 'rt'=>array('ruby'=>1)); // Illegal
+	$illegal2 = array_keys($illegal);
+	$cR = array('blockquote'=>1, 'dir'=>1, 'dl'=>1, 'form'=>1, 'map'=>1, 'menu'=>1, 'noscript'=>1, 'ol'=>1, 'optgroup'=>1, 'rbc'=>1, 'rtc'=>1, 'ruby'=>1, 'select'=>1, 'table'=>1, 'tbody'=>1, 'tfoot'=>1, 'thead'=>1, 'tr'=>1, 'ul'=>1);
+	$parentChild = array('colgroup'=>array('col'=>1), 'dir'=>array('li'=>1), 'dl'=>array('dd'=>1, 'dt'=>1), 'menu'=>array('li'=>1), 'ol'=>array('li'=>1), 'optgroup'=>array('option'=>1), 'option'=>array('#pcdata'=>1), 'rbc'=>array('rb'=>1), 'rp'=>array('#pcdata'=>1), 'rtc'=>array('rt'=>1), 'ruby'=>array('rb'=>1, 'rbc'=>1, 'rp'=>1, 'rt'=>1, 'rtc'=>1), 'select'=>array('optgroup'=>1, 'option'=>1), 'script'=>array('#pcdata'=>1), 'table'=>array('caption'=>1, 'col'=>1, 'colgroup'=>1, 'tfoot'=>1, 'tbody'=>1, 'tr'=>1, 'thead'=>1), 'tbody'=>array('tr'=>1), 'tfoot'=>array('tr'=>1), 'textarea'=>array('#pcdata'=>1), 'thead'=>array('tr'=>1), 'tr'=>array('td'=>1, 'th'=>1), 'ul'=>array('li'=>1)); // Specific - immediate parent-child
+	if ($GLOBALS['config']['direct_list_nest']) {
+		$parentChild['ol'] = $parentChild['ul'] += array('ol'=>1, 'ul'=>1);
+	}
+	$other = array('address'=>array('p'=>1), 'applet'=>array('param'=>1), 'blockquote'=>array('script'=>1), 'fieldset'=>array('legend'=>1, '#pcdata'=>1), 'form'=>array('script'=>1), 'map'=>array('area'=>1), 'object'=>array('param'=>1, 'embed'=>1)); // Other
+	$omitClose = array('colgroup'=>1, 'dd'=>1, 'dt'=>1, 'li'=>1, 'option'=>1, 'p'=>1, 'td'=>1, 'tfoot'=>1, 'th'=>1, 'thead'=>1, 'tr'=>1); // Omitable closing
+	// block/inline type; ins & del both type; #pcdata: text
+	$eB = array('address'=>1, 'blockquote'=>1, 'center'=>1, 'del'=>1, 'dir'=>1, 'dl'=>1, 'div'=>1, 'fieldset'=>1, 'form'=>1, 'ins'=>1, 'h1'=>1, 'h2'=>1, 'h3'=>1, 'h4'=>1, 'h5'=>1, 'h6'=>1, 'hr'=>1, 'isindex'=>1, 'menu'=>1, 'noscript'=>1, 'ol'=>1, 'p'=>1, 'pre'=>1, 'table'=>1, 'ul'=>1);
+	$eI = array('#pcdata'=>1, 'a'=>1, 'abbr'=>1, 'acronym'=>1, 'applet'=>1, 'b'=>1, 'bdo'=>1, 'big'=>1, 'br'=>1, 'button'=>1, 'cite'=>1, 'code'=>1, 'del'=>1, 'dfn'=>1, 'em'=>1, 'embed'=>1, 'font'=>1, 'i'=>1, 'iframe'=>1, 'img'=>1, 'input'=>1, 'ins'=>1, 'kbd'=>1, 'label'=>1, 'map'=>1, 'object'=>1, 'q'=>1, 'ruby'=>1, 's'=>1, 'samp'=>1, 'select'=>1, 'script'=>1, 'small'=>1, 'span'=>1, 'strike'=>1, 'strong'=>1, 'sub'=>1, 'sup'=>1, 'textarea'=>1, 'tt'=>1, 'u'=>1, 'var'=>1);
+	$eN = array('a'=>1, 'big'=>1, 'button'=>1, 'fieldset'=>1, 'font'=>1, 'form'=>1, 'iframe'=>1, 'img'=>1, 'input'=>1, 'label'=>1, 'object'=>1, 'ruby'=>1, 'script'=>1, 'select'=>1, 'small'=>1, 'sub'=>1, 'sup'=>1, 'textarea'=>1); // Exclude from specific ele; $illegal values
+	$eO = array('area'=>1, 'caption'=>1, 'col'=>1, 'colgroup'=>1, 'dd'=>1, 'dt'=>1, 'legend'=>1, 'li'=>1, 'optgroup'=>1, 'option'=>1, 'param'=>1, 'rb'=>1, 'rbc'=>1, 'rp'=>1, 'rt'=>1, 'rtc'=>1, 'script'=>1, 'tbody'=>1, 'td'=>1, 'tfoot'=>1, 'thead'=>1, 'th'=>1, 'tr'=>1); // Missing in $eB & $eI
+	$eF = $eB + $eI;
 
-// $in sets allowed child
-$in = ((isset($eF[$in]) && $in != '#pcdata') or isset($eO[$in])) ? $in : 'div';
-if(isset($cE[$in])){
- return (!$do ? '' : str_replace(array('<', '>'), array('&lt;', '&gt;'), $t));
-}
-if(isset($cS[$in])){$inOk = $cS[$in];}
-elseif(isset($cI[$in])){$inOk = $eI; $cI['del'] = 1; $cI['ins'] = 1;}
-elseif(isset($cF[$in])){$inOk = $eF; unset($cI['del'], $cI['ins']);}
-elseif(isset($cB[$in])){$inOk = $eB; unset($cI['del'], $cI['ins']);}
-if(isset($cO[$in])){$inOk = $inOk + $cO[$in];}
-if(isset($cN[$in])){$inOk = array_diff_assoc($inOk, $cN[$in]);}
+	// $in sets allowed child
+	$in = ((isset($eF[$in]) && $in != '#pcdata') or isset($eO[$in])) ? $in : 'div';
+	if(isset($empty[$in])){
+	 return (!$do ? '' : str_replace(array('<', '>'), array('&lt;', '&gt;'), $t));
+	}
+	if(isset($parentChild[$in])){$inOk = $parentChild[$in];}
+	elseif(isset($inline[$in])){$inOk = $eI; $inline['del'] = 1; $inline['ins'] = 1;}
+	elseif(isset($flow[$in])){$inOk = $eF; unset($inline['del'], $inline['ins']);}
+	elseif(isset($block[$in])){$inOk = $eB; unset($inline['del'], $inline['ins']);}
+	if(isset($other[$in])){$inOk = $inOk + $other[$in];}
+	if(isset($illegal[$in])){$inOk = array_diff_assoc($inOk, $illegal[$in]);}
 
-$t = explode('<', $t);
-$ok = $q = array(); // $q seq list of open non-empty ele
-ob_start();
+	$t = explode('<', $t);
+	$ok = $q = array(); // $q seq list of open non-empty ele
+	ob_start();
 
-for($i=-1, $ci=count($t); ++$i<$ci;){
- // allowed $ok in parent $p
- if($ql = count($q)){
-	$p = array_pop($q);
-	$q[] = $p;
-	if(isset($cS[$p])){$ok = $cS[$p];}
-	elseif(isset($cI[$p])){$ok = $eI; $cI['del'] = 1; $cI['ins'] = 1;}
-	elseif(isset($cF[$p])){$ok = $eF; unset($cI['del'], $cI['ins']);}
-	elseif(isset($cB[$p])){$ok = $eB; unset($cI['del'], $cI['ins']);}
-	if(isset($cO[$p])){$ok = $ok + $cO[$p];}
-	if(isset($cN[$p])){$ok = array_diff_assoc($ok, $cN[$p]);}
- }else{$ok = $inOk; unset($cI['del'], $cI['ins']);}
- // bad tags, & ele content
- if(isset($e) && ($do == 1 or (isset($ok['#pcdata']) && ($do == 3 or $do == 5)))){
-	echo '&lt;', $s, $e, $a, '&gt;';
- }
- if(isset($x[0])){
-	if($do < 3 or isset($ok['#pcdata'])){echo $x;}
-	elseif(strpos($x, "\x02\x04")){
-	 foreach(preg_split('`(\x01\x02[^\x01\x02]+\x02\x01)`', $x, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $v){
-		echo (substr($v, 0, 2) == "\x01\x02" ? $v : ($do > 4 ? preg_replace('`\S`', '', $v) : ''));
+	for($i=-1, $ci=count($t); ++$i<$ci;){
+	 // allowed $ok in parent $p
+	 if($ql = count($q)){
+		$p = array_pop($q);
+		$q[] = $p;
+		if(isset($parentChild[$p])){$ok = $parentChild[$p];}
+		elseif(isset($inline[$p])){$ok = $eI; $inline['del'] = 1; $inline['ins'] = 1;}
+		elseif(isset($flow[$p])){$ok = $eF; unset($inline['del'], $inline['ins']);}
+		elseif(isset($block[$p])){$ok = $eB; unset($inline['del'], $inline['ins']);}
+		if(isset($other[$p])){$ok = $ok + $other[$p];}
+		if(isset($illegal[$p])){$ok = array_diff_assoc($ok, $illegal[$p]);}
+	 }else{$ok = $inOk; unset($inline['del'], $inline['ins']);}
+	 // bad tags, & ele content
+	 if(isset($e) && ($do == 1 or (isset($ok['#pcdata']) && ($do == 3 or $do == 5)))){
+		echo '&lt;', $s, $e, $a, '&gt;';
 	 }
-	}elseif($do > 4){echo preg_replace('`\S`', '', $x);}
- }
- // get markup
- if(!preg_match('`^(/?)([a-zA-Z1-6]+)([^>]*)>(.*)`sm', $t[$i], $r)){$x = $t[$i]; continue;}
- $s = null; $e = null; $a = null; $x = null; list($all, $s, $e, $a, $x) = $r;
- // close tag
- if($s){
-	if(isset($cE[$e]) or !in_array($e, $q)){continue;} // Empty/unopen
-	if($p == $e){array_pop($q); echo '</', $e, '>'; unset($e); continue;} // Last open
-	$add = ''; // Nesting - close open tags that need to be
-	for($j=-1, $cj=count($q); ++$j<$cj;){	
-	 if(($d = array_pop($q)) == $e){break;}
-	 else{$add .= "</{$d}>";}
+	 if(isset($x[0])){
+		if($do < 3 or isset($ok['#pcdata'])){echo $x;}
+		elseif(strpos($x, "\x02\x04")){
+		 foreach(preg_split('`(\x01\x02[^\x01\x02]+\x02\x01)`', $x, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $v){
+			echo (substr($v, 0, 2) == "\x01\x02" ? $v : ($do > 4 ? preg_replace('`\S`', '', $v) : ''));
+		 }
+		}elseif($do > 4){echo preg_replace('`\S`', '', $x);}
+	 }
+	 // get markup
+	 if(!preg_match('`^(/?)([a-zA-Z1-6]+)([^>]*)>(.*)`sm', $t[$i], $r)){$x = $t[$i]; continue;}
+	 $s = null; $e = null; $a = null; $x = null; list($all, $s, $e, $a, $x) = $r;
+	 // close tag
+	 if($s){
+		if(isset($empty[$e]) or !in_array($e, $q)){continue;} // Empty/unopen
+		if($p == $e){array_pop($q); echo '</', $e, '>'; unset($e); continue;} // Last open
+		$add = ''; // Nesting - close open tags that need to be
+		for($j=-1, $cj=count($q); ++$j<$cj;){	
+		 if(($d = array_pop($q)) == $e){break;}
+		 else{$add .= "</{$d}>";}
+		}
+		echo $add, '</', $e, '>'; unset($e); continue;
+	 }
+	 // open tag
+	 // $block ele needs $eB ele as child
+	 if(isset($block[$e]) && strlen(trim($x))){
+		$t[$i] = "{$e}{$a}>";
+		array_splice($t, $i+1, 0, 'div>'. $x); unset($e, $x); ++$ci; --$i; continue;
+	 }
+	 if((($ql && isset($block[$p])) or (isset($block[$in]) && !$ql)) && !isset($eB[$e]) && !isset($ok[$e])){
+		array_splice($t, $i, 0, 'div>'); unset($e, $x); ++$ci; --$i; continue;
+	 }
+	 // if no open ele, $in = parent; mostly immediate parent-child relation should hold
+	 if(!$ql or !isset($eN[$e]) or !array_intersect($q, $illegal2)){
+		if(!isset($ok[$e])){
+		 if($ql && isset($omitClose[$p])){echo '</', array_pop($q), '>'; unset($e, $x); --$i;}
+		 continue;
+		}
+		if(!isset($empty[$e])){$q[] = $element;}
+		echo '<', $e, $a, '>'; unset($e); continue;
+	 }
+	 // specific parent-child
+	 if(isset($parentChild[$p][$e])){
+		if(!isset($empty[$e])){$q[] = $element;}
+		echo '<', $e, $a, '>'; unset($e); continue;
+	 }
+	 // nesting
+	 $add = '';
+	 $q2 = array();
+	 for($k=-1, $kc=count($q); ++$k<$kc;){
+		$d = $q[$k];
+		$ok2 = array();
+		if(isset($parentChild[$d])){$q2[] = $d; continue;}
+		$ok2 = isset($inline[$d]) ? $eI : $eF;
+		if(isset($other[$d])){$ok2 = $ok2 + $other[$d];}
+		if(isset($illegal[$d])){$ok2 = array_diff_assoc($ok2, $illegal[$d]);}
+		if(!isset($ok2[$e])){
+		 if(!$k && !isset($inOk[$e])){continue 2;}
+		 $add = "</{$d}>";
+		 for(;++$k<$kc;){$add = "</{$q[$k]}>{$add}";}
+		 break;
+		}
+		else{$q2[] = $d;}
+	 }
+	 $q = $q2;
+	 if(!isset($empty[$e])){$q[] = $element;}
+	 echo $add, '<', $e, $a, '>'; unset($e); continue;
 	}
-	echo $add, '</', $e, '>'; unset($e); continue;
- }
- // open tag
- // $cB ele needs $eB ele as child
- if(isset($cB[$e]) && strlen(trim($x))){
-	$t[$i] = "{$e}{$a}>";
-	array_splice($t, $i+1, 0, 'div>'. $x); unset($e, $x); ++$ci; --$i; continue;
- }
- if((($ql && isset($cB[$p])) or (isset($cB[$in]) && !$ql)) && !isset($eB[$e]) && !isset($ok[$e])){
-	array_splice($t, $i, 0, 'div>'); unset($e, $x); ++$ci; --$i; continue;
- }
- // if no open ele, $in = parent; mostly immediate parent-child relation should hold
- if(!$ql or !isset($eN[$e]) or !array_intersect($q, $cN2)){
-	if(!isset($ok[$e])){
-	 if($ql && isset($cT[$p])){echo '</', array_pop($q), '>'; unset($e, $x); --$i;}
-	 continue;
-	}
-	if(!isset($cE[$e])){$q[] = $element;}
-	echo '<', $e, $a, '>'; unset($e); continue;
- }
- // specific parent-child
- if(isset($cS[$p][$e])){
-	if(!isset($cE[$e])){$q[] = $element;}
-	echo '<', $e, $a, '>'; unset($e); continue;
- }
- // nesting
- $add = '';
- $q2 = array();
- for($k=-1, $kc=count($q); ++$k<$kc;){
-	$d = $q[$k];
-	$ok2 = array();
-	if(isset($cS[$d])){$q2[] = $d; continue;}
-	$ok2 = isset($cI[$d]) ? $eI : $eF;
-	if(isset($cO[$d])){$ok2 = $ok2 + $cO[$d];}
-	if(isset($cN[$d])){$ok2 = array_diff_assoc($ok2, $cN[$d]);}
-	if(!isset($ok2[$e])){
-	 if(!$k && !isset($inOk[$e])){continue 2;}
-	 $add = "</{$d}>";
-	 for(;++$k<$kc;){$add = "</{$q[$k]}>{$add}";}
-	 break;
-	}
-	else{$q2[] = $d;}
- }
- $q = $q2;
- if(!isset($cE[$e])){$q[] = $element;}
- echo $add, '<', $e, $a, '>'; unset($e); continue;
-}
 
-// end
-if($ql = count($q)){
- $p = array_pop($q);
- $q[] = $p;
- if(isset($cS[$p])){$ok = $cS[$p];}
- elseif(isset($cI[$p])){$ok = $eI; $cI['del'] = 1; $cI['ins'] = 1;}
- elseif(isset($cF[$p])){$ok = $eF; unset($cI['del'], $cI['ins']);}
- elseif(isset($cB[$p])){$ok = $eB; unset($cI['del'], $cI['ins']);}
- if(isset($cO[$p])){$ok = $ok + $cO[$p];}
- if(isset($cN[$p])){$ok = array_diff_assoc($ok, $cN[$p]);}
-}else{$ok = $inOk; unset($cI['del'], $cI['ins']);}
-if(isset($e) && ($do == 1 or (isset($ok['#pcdata']) && ($do == 3 or $do == 5)))){
- echo '&lt;', $s, $e, $a, '&gt;';
-}
-if(isset($x[0])){
- if(strlen(trim($x)) && (($ql && isset($cB[$p])) or (isset($cB[$in]) && !$ql))){
-	echo '<div>', $x, '</div>';
- }
- elseif($do < 3 or isset($ok['#pcdata'])){echo $x;}
- elseif(strpos($x, "\x02\x04")){
-	foreach(preg_split('`(\x01\x02[^\x01\x02]+\x02\x01)`', $x, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $v){
-	 echo (substr($v, 0, 2) == "\x01\x02" ? $v : ($do > 4 ? preg_replace('`\S`', '', $v) : ''));
+	// end
+	if($ql = count($q)){
+	 $p = array_pop($q);
+	 $q[] = $p;
+	 if(isset($parentChild[$p])){$ok = $parentChild[$p];}
+	 elseif(isset($inline[$p])){$ok = $eI; $inline['del'] = 1; $inline['ins'] = 1;}
+	 elseif(isset($flow[$p])){$ok = $eF; unset($inline['del'], $inline['ins']);}
+	 elseif(isset($block[$p])){$ok = $eB; unset($inline['del'], $inline['ins']);}
+	 if(isset($other[$p])){$ok = $ok + $other[$p];}
+	 if(isset($illegal[$p])){$ok = array_diff_assoc($ok, $illegal[$p]);}
+	}else{$ok = $inOk; unset($inline['del'], $inline['ins']);}
+	if(isset($e) && ($do == 1 or (isset($ok['#pcdata']) && ($do == 3 or $do == 5)))){
+	 echo '&lt;', $s, $e, $a, '&gt;';
 	}
- }elseif($do > 4){echo preg_replace('`\S`', '', $x);}
-}
-while(!empty($q) && ($e = array_pop($q))){echo '</', $e, '>';}
-$o = ob_get_contents();
-ob_end_clean();
-return $o;
+	if(isset($x[0])){
+	 if(strlen(trim($x)) && (($ql && isset($block[$p])) or (isset($block[$in]) && !$ql))){
+		echo '<div>', $x, '</div>';
+	 }
+	 elseif($do < 3 or isset($ok['#pcdata'])){echo $x;}
+	 elseif(strpos($x, "\x02\x04")){
+		foreach(preg_split('`(\x01\x02[^\x01\x02]+\x02\x01)`', $x, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $v){
+		 echo (substr($v, 0, 2) == "\x01\x02" ? $v : ($do > 4 ? preg_replace('`\S`', '', $v) : ''));
+		}
+	 }elseif($do > 4){echo preg_replace('`\S`', '', $x);}
+	}
+	while(!empty($q) && ($e = array_pop($q))){echo '</', $e, '>';}
+	$o = ob_get_contents();
+	ob_end_clean();
+	return $o;
 // eof
 }
 

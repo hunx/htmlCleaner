@@ -95,9 +95,14 @@ class HtmlCleaner {
 	}
 
 	/**
-	 * @todo Expand this maybe?
+	 * Transform tags according to predefined parameters.
+	 * Original Name: hl_tag2
+	 *
+	 * @param string $tag - An HTML tag
+	 * @param string $attributes - Any attributes associated with $tag
+	 * @return array - An array with updated versions of $tag & $attribute
 	 */
-	public function transformTags($tag, $attributes = '') {
+	public function transformTag($tag, $attributes = '') {
 		//Transform tags
 		switch (strtolower($tag)) {
 			case 'center':
@@ -480,7 +485,7 @@ class HtmlCleaner {
 			'dd' => false,
 			'del' => false,
 			'dfn' => false,
-			'dir' => false,
+			'dir' => false,	//Will be transformed
 			'div' => true,
 			'dl' => false,
 			'dt' => false,
@@ -512,7 +517,7 @@ class HtmlCleaner {
 			'li' => true,
 			'link' => false,
 			'map' => false,
-			'menu' => false,
+			'menu' => false,	//Will be transformed
 			'meta' => false,
 			'nobr' => false,
 			'noframes' => false,
