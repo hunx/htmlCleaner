@@ -47,113 +47,8 @@ class HtmlCleaner {
 	 * @param array $exclude - an array of tag names that should not be accepted
 	 * @return object - Returns an updated version of the current object
 	 */
-	public function setTags($include = array(), $exclude = array()) {
-		$tags = array(
-			'!DOCTYPE' => false,
-			'a' => true,
-			'abbr' => true,
-			'acronym' => true,
-			'address' => true,
-			'applet' => false,
-			'area' => false,
-			'b' => true,
-			'base' => true,
-			'basefont' => false,
-			'bdo' => true,
-			'big' => true,
-			'blockquote' => true,
-			'body' => true,
-			'br' => true,
-			'button' => true,
-			'caption' => true,
-			'center' => false,
-			'cite' => true,
-			'code' => true,
-			'col' => true,
-			'colgroup' => true,
-			'dd' => true,
-			'del' => true,
-			'dfn' => true,
-			'dir' => false,
-			'div' => true,
-			'dl' => true,
-			'dt' => true,
-			'em' => true,
-			'embed' => false,
-			'fieldset' => true,
-			'font' => false,
-			'form' => true,
-			'frame' => true,
-			'frameset' => true,
-			'h1' => true,
-			'h2' => true,
-			'h3' => true,
-			'h4' => true,
-			'h5' => true,
-			'h6' => true,
-			'head' => true,
-			'hr' => true,
-			'html' => true,
-			'i' => true,
-			'iframe' => false,
-			'img' => false,
-			'input' => true,
-			'ins' => true,
-			'isindex' => false,
-			'kbd' => true,
-			'label' => true,
-			'legend' => true,
-			'li' => true,
-			'link' => true,
-			'map' => false,
-			'menu' => false,
-			'meta' => true,
-			'nobr' => false,
-			'noframes' => true,
-			'noscript' => true,
-			'object' => false,
-			'ol' => true,
-			'optgroup' => true,
-			'option' => true,
-			'p' => true,
-			'param' => true,
-			'pre' => true,
-			'q' => true,
-			'ruby' => false,
-			's' => false,
-			'samp' => true,
-			'script' => false,
-			'select' => true,
-			'small' => true,
-			'span' => true,
-			'strike' => false,
-			'strong' => true,
-			'style' => false,
-			'sub' => true,
-			'sup' => true,
-			'table' => true,
-			'tbody' => true,
-			'td' => true,
-			'textarea' => true,
-			'tfoot' => true,
-			'th' => true,
-			'thead' => true,
-			'title' => true,
-			'tr' => true,
-			'tt' => true,
-			'u' => false,
-			'ul' => true,
-			'var' => true,
-			'xmp' => false);
-		
-		foreach ($include as $tag) {
-			$tags[$tag] = true;
-		}
-		foreach ($exclude as $tag) {
-			$tags[$tag] = false;
-		}
-
-		$this->tags = $tags;
+	public function setTags($tags = array()) {
+		$this->tags = $this->setTagList($tags);
 		return $this;
 	}
 
@@ -202,64 +97,76 @@ class HtmlCleaner {
 	/**
 	 * @todo Expand this maybe?
 	 */
-	public function strictTag($tag, $attribute) {
-		// transform tag
-		if ($tag == 'center') {
-			$tag = 'div';
-			return 'text-align: center;';
-		}
-		
-		if ($tag == 'dir' or $tag == 'menu') {
-			$tag = 'ul'; 
-			return '';
+	public function transformTags($tag, $attributes = '') {
+		//Transform tags
+		switch (strtolower($tag)) {
+			case 'center':
+				$tag = 'div';
+				$attributes = 'text-align: center;';
+				break;
+			case 'dir':
+			case 'menu':
+				$tag = 'ul'; 
+				$attributes = '';
+				break;
+			case 'strike':
+			case 's':
+				$tag = 'span'; 
+				$attributes = 'text-decoration: line-through;';
+				break;
+			case 'u':
+				$tag = 'span'; 
+				$attributes = 'text-decoration: underline;';
+				break;
+			case 'b':
+				$tag = 'strong'; 
+				$attributes = '';
+				break;
+			case 'i':
+				$tag = 'em'; 
+				$attributes = '';
+				break;
+			case 'font':
+				$fontSizes = array(
+					'0' => 'xx-small',
+					'1' => 'xx-small',
+					'2' => 'small',
+					'3' => 'medium',
+					'4' => 'large',
+					'5' => 'x-large',
+					'6' => 'xx-large',
+					'7' => '300%',
+					'-1' => 'smaller',
+					'-2' => '60%',
+					'+1' => 'larger',
+					'+2' => '150%',
+					'+3' => '200%',
+					'+4' => '300%'
+				);
+				$attr = '';
+				if (
+					preg_match('@face\s*=\s*(\'|")([^=]+?)\\1@i', $attributes, $match) || 
+					preg_match('@face\s*=\s*([^"])(\S+)@i', $attributes, $match)
+				) {
+					$attr .= ' font-family: ' . str_replace('"', "'", trim($match[2])) . ';';
+				}
+
+				if (preg_match('`color\s*=\s*(\'|")?(.+?)(\\1|\s|$)`i', $attributes, $match)) {
+					$attr .= ' color: ' . trim($match[2]) . ';';
+				}
+				if (
+					preg_match('`size\s*=\s*(\'|")?(.+?)(\\1|\s|$)`i', $attribute, $match) && 
+					isset($fontSizes[($match = trim($match[2]))])) {
+					$attr .= ' font-size: ' . $fontSizes[$match] . ';';
+				}
+				$tag = 'span'; 
+				$attributes = $attr;
+				break;
+			default:
+				break;
 		}
 
-		if ($tag == 's' or $tag == 'strike') {
-			$tag = 'span'; 
-			return 'text-decoration: line-through;';
-		}
-
-		if ($tag == 'u') {
-			$tag = 'span'; 
-			return 'text-decoration: underline;';
-		}
-		$fontSizes = array(
-			'0'=>'xx-small',
-			'1'=>'xx-small',
-			'2'=>'small',
-			'3'=>'medium',
-			'4'=>'large',
-			'5'=>'x-large',
-			'6'=>'xx-large',
-			'7'=>'300%',
-			'-1'=>'smaller',
-			'-2'=>'60%',
-			'+1'=>'larger',
-			'+2'=>'150%',
-			'+3'=>'200%',
-			'+4'=>'300%'
-		);
-		if ($tag == 'font') {
-			$attr = '';
-			if (
-				preg_match('@face\s*=\s*(\'|")([^=]+?)\\1@i', $attribute, $match) || 
-				preg_match('@face\s*=\s*([^"])(\S+)@i', $attribute, $match)
-			) {
-				$attr .= ' font-family: ' . str_replace('"', "'", trim($match[2])) . ';';
-			}
-
-			if (preg_match('`color\s*=\s*(\'|")?(.+?)(\\1|\s|$)`i', $attribute, $match)) {
-				$attr .= ' color: ' . trim($match[2]) . ';';
-			}
-			if (
-				preg_match('`size\s*=\s*(\'|")?(.+?)(\\1|\s|$)`i', $attribute, $match) && 
-				isset($fontSizes[($match = trim($match[2]))])) {
-				$attr .= ' font-size: ' . $fontSizes[$match] . ';';
-			}
-			$tag = 'span'; 
-			return ltrim($attr);
-		}
-		return array('tag' => $tag, 'attribute' => $attribute);
+		return array('tag' => $tag, 'attributes' => $attributes);
 	}
 
 
@@ -482,12 +389,11 @@ class HtmlCleaner {
 
 	/** 
 	 * Set up a list of attributes that we either will or will not accept inside tags.
-	 * This list is independent of whether or not we want to keep them or get rid of them
 	 *
 	 * @param array $attributes - Optional parameter list of attributes.
 	 * @return array - A list of HTML Tag attributes
 	 */
-	private function setAttributeList($attributes = array()) {
+	private function setAttributeList($attributes = array(), $type = 'accepted') {
 		if (empty($attributes)) {
 			return array();
 		}
@@ -501,7 +407,7 @@ class HtmlCleaner {
 				$addOn = true;
 				continue;	//Skip to the next one
 			}
-			$attributes[$key] = str_replace(array("\n", "\r", "\t", ' ', '*'), '', strtolower($attr));
+			$attributes[$key] = str_replace(array("\n", "\r", "\t", ' ', '*'), '', $attr);
 		}
 
 		if (isst($addOn) && $addOn) {
@@ -527,7 +433,160 @@ class HtmlCleaner {
 				),
 			);
 		}
+
+		foreach ($attributes as $key => $attr) {
+			if ($accepted) {
+				$attributes[$attr] = true;
+			} else {
+				$attributes[$attr] = false;
+			}
+			unset($attributes[$key]);
+		}
+
 		return $attributes;
+	}
+
+	/** 
+	 * Set up a list of tags that we either will or will not accept.
+	 *
+	 * @param array $tags - Optional parameter list of tags.
+	 * @return array - A list of HTML Tags and whether or not they are acceptable in a code snippit
+	 */
+	private function setTagList($tags = array(), $type = 'accepted') {
+		//Complete tag list with default usability settings
+		$allTags = array(
+			'!DOCTYPE' => false,
+			'a' => true,
+			'abbr' => false,
+			'acronym' => false,
+			'address' => false,
+			'applet' => false,
+			'area' => false,
+			'b' => false,	//Will be transformed
+			'base' => false,
+			'basefont' => false,
+			'bdo' => false,
+			'big' => false,
+			'blockquote' => false,
+			'body' => false,
+			'br' => true,
+			'button' => false,
+			'caption' => false,
+			'center' => false,	//Will be transformed
+			'cite' => false,
+			'code' => false,
+			'col' => false,
+			'colgroup' => false,
+			'dd' => false,
+			'del' => false,
+			'dfn' => false,
+			'dir' => false,
+			'div' => true,
+			'dl' => false,
+			'dt' => false,
+			'em' => true,
+			'embed' => false,
+			'fieldset' => false,
+			'font' => false,	//Will be transformed
+			'form' => false,
+			'frame' => false,
+			'frameset' => false,
+			'h1' => true,
+			'h2' => true,
+			'h3' => true,
+			'h4' => true,
+			'h5' => true,
+			'h6' => false,
+			'head' => false,
+			'hr' => false,
+			'html' => false,
+			'i' => false,	//Will be transformed
+			'iframe' => false,
+			'img' => false,
+			'input' => false,
+			'ins' => false,
+			'isindex' => false,
+			'kbd' => false,
+			'label' => false,
+			'legend' => false,
+			'li' => true,
+			'link' => false,
+			'map' => false,
+			'menu' => false,
+			'meta' => false,
+			'nobr' => false,
+			'noframes' => false,
+			'noscript' => false,
+			'object' => false,
+			'ol' => true,
+			'optgroup' => false,
+			'option' => false,
+			'p' => true,
+			'param' => false,
+			'pre' => false,
+			'q' => false,
+			'ruby' => false,
+			's' => false,	//Will be transformed
+			'samp' => false,
+			'script' => false,
+			'select' => false,
+			'small' => false,
+			'span' => true,
+			'strike' => false,	//Will be transformed
+			'strong' => true,
+			'style' => false,
+			'sub' => false,
+			'sup' => false,
+			'table' => true,
+			'tbody' => true,
+			'td' => true,
+			'textarea' => false,
+			'tfoot' => false,
+			'th' => false,
+			'thead' => true,
+			'title' => false,
+			'tr' => true,
+			'tt' => false,
+			'u' => false,	//Will be transformed
+			'ul' => true,
+			'var' => false,
+			'xmp' => false
+		);
+
+		//Clean up the tags, remove any line breaks and spaces, and make everything lowercase
+		foreach ($tags as $key => $tag) {
+			$tag = strtolower($tag);
+
+			if (strpos($tag, '*') !== false) {
+				unset($tags[$key]);
+				$allTags = true;
+				break;
+			}
+			$tags[$key] = str_replace(array("\n", "\r", "\t", ' ', '*'), '', $tag);
+		}
+
+		foreach ($allTags as $tag => $default) {
+			//Changing this to true/false makes value assignment easier
+			if ($type == 'acceptable') {
+				$type = true;
+			} else {
+				$type = false;
+			}
+
+			if (isset($allTags) && $allTags) {
+				$allTags[$tag] = $type;	//Assign all tags this value, regardless
+			} else {
+				if (in_array($tag, $tags)) {
+					$allTags[$tag] = $type;
+				} else {
+					if ($default != $type) {
+						$allTags[$tag] = !$type;
+					}
+				}
+			}
+		}
+	
+		return $allTags;
 	}
 
 	/** 
