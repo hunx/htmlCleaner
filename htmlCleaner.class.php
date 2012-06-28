@@ -13,12 +13,47 @@
 
 class HtmlCleaner {
 
+	private $version = '1.1.11';
+
 	private $tags;
+
+	private $settings = array(
+		'abs_url',
+		'and_mark',
+		'anti_link_spam',
+		'anti_mail_spam',
+		'balance',
+		'base_url',
+		'cdata',
+		'clean_ms_char',
+		'comment',
+		'css_expression',
+		'keep_attributes' => array('style', 'href'),
+		'direct_list_nest',
+		'elements',
+		'hexdec_entity',
+		'hook',
+		'hook_tag',
+		'keep_bad',
+		'lc_std_val',
+		'make_tag_strict',
+		'named_entity',
+		'no_deprecated_attr',
+		'parent',
+		'safe' => true,
+		'schemes' => 'href: http, https',
+		'show_setting',
+		'style_pass',
+		'tidy' => true,
+		'unique_ids',
+		'valid_xhtml' => true,
+		'xml:lang' => false,
+	);
 
 	/**
 	 * @todo expand this
 	 */
-	function __construct() {
+	public function __construct() {
 
 	}
 
@@ -37,6 +72,19 @@ class HtmlCleaner {
 
 
 		$html = str_replace(array('\n', '\r', '\t', ' '), '', $html);
+		return $this;
+	}
+
+	/**
+	 * To support method chaining off the constructor, we introduce this static method.
+	 * (For more information, see https://bugs.php.net/bug.php?id=34502)
+	 */ 
+	static public function instantiate($html = false) {
+		$htmlCleaner = new self();
+		if ($html !== false) {
+			$htmlCleaner->cleanHtml($html);
+		}
+		return $htmlCleaner;
 	}
 
 	/**
@@ -59,39 +107,12 @@ class HtmlCleaner {
 	/**
 	 * @todo expand this
 	 */
-	private function settings() {
-		$settings = array(
-			'abs_url',
-			'and_mark',
-			'anti_link_spam',
-			'anti_mail_spam',
-			'balance',
-			'base_url',
-			'cdata',
-			'clean_ms_char',
-			'comment',
-			'css_expression',
-			'keep_attributes' => array('style', 'href'),
-			'direct_list_nest',
-			'elements',
-			'hexdec_entity',
-			'hook',
-			'hook_tag',
-			'keep_bad',
-			'lc_std_val',
-			'make_tag_strict',
-			'named_entity',
-			'no_deprecated_attr',
-			'parent',
-			'safe' => true,
-			'schemes' => 'href: http, https',
-			'show_setting',
-			'style_pass',
-			'tidy' => true,
-			'unique_ids',
-			'valid_xhtml' => true,
-			'xml:lang' => false,
-		);
+	public function changeSetting($setting, $value) {
+		if (isset($this->settings[$setting])) {
+			$this->settings[$setting] = $value;
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -102,7 +123,7 @@ class HtmlCleaner {
 	 * @param string $attributes - Any attributes associated with $tag
 	 * @return array - An array with updated versions of $tag & $attribute
 	 */
-	public function transformTag($tag, $attributes = '') {
+	private function transformTag($tag, $attributes = '') {
 		//Transform tags
 		switch (strtolower($tag)) {
 			case 'center':
@@ -178,7 +199,7 @@ class HtmlCleaner {
 	/**
 	 * @todo finish conversion on this, right now it just a copy/paste.
 	 */
-	function hl_tag($t) {
+	private function hl_tag($t) {
 		// tag/attribute handler
 		$t = $t[0];
 		// invalid < >
@@ -194,7 +215,7 @@ class HtmlCleaner {
 		// tag transform
 		static $eD = array('applet'=>1, 'center'=>1, 'dir'=>1, 'embed'=>1, 'font'=>1, 'isindex'=>1, 'menu'=>1, 's'=>1, 'strike'=>1, 'u'=>1); // Deprecated
 		if($config['make_tag_strict'] && isset($eD[$e])){
-		 $trt = hl_tag2($e, $a, $config['make_tag_strict']);
+		 $trt = $this->transformTag($e, $a, $config['make_tag_strict']);
 		 if(!$e){return (($config['keep_bad']%2) ? str_replace(array('<', '>'), array('&lt;', '&gt;'), $t) : '');}
 		}
 		// close tag
@@ -385,9 +406,6 @@ class HtmlCleaner {
 		else{return $config['hook_tag']($e, $a);}
 		// eof
 	}
-
-
-
 
 
 	/* All the helper functions that will instantiate parts of the settings */
@@ -623,5 +641,12 @@ class HtmlCleaner {
 		}
 
 		return $return;
+	}
+
+	/**
+	 * Only included to offer all functions provided in the original
+	 */
+	public function getVersion() {
+		return $this->version;
 	}
 }
