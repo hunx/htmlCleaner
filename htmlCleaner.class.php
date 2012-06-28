@@ -14,11 +14,19 @@
 class HtmlCleaner {
 
 	private $tags;
+
+	/**
+	 * @todo expand this
+	 */
 	function __construct() {
 
 	}
 
+	/**
+	 * @todo expand this
+	 */
 	public function cleanHtml($html = '') {
+		//strip_comments is not a standard PHP function, use something else not from our codebase
 		$html = strip_comments($html);
 
 
@@ -31,14 +39,14 @@ class HtmlCleaner {
 		$html = str_replace(array('\n', '\r', '\t', ' '), '', $html);
 	}
 
-/**
- * A complete tag list and whether or not we accept them (true/false)
- * Includes HTML5, deprecated tags, embed, ruby, isindex, and nobr
- *
- * @param array $include - an array of tag names that should be accepted
- * @param array $exclude - an array of tag names that should not be accepted
- * @return array - an array of tag names and acceptability
- */
+	/**
+	 * A complete tag list and whether or not we accept them (true/false)
+	 * Includes HTML5, deprecated tags, embed, ruby, isindex, and nobr
+	 *
+	 * @param array $include - an array of tag names that should be accepted
+	 * @param array $exclude - an array of tag names that should not be accepted
+	 * @return object - Returns an updated version of the current object
+	 */
 	public function setTags($include = array(), $exclude = array()) {
 		$tags = array(
 			'!DOCTYPE' => false,
@@ -153,6 +161,9 @@ class HtmlCleaner {
 		return $this->tags;
 	}
 
+	/**
+	 * @todo expand this
+	 */
 	private function settings() {
 		$settings = array(
 			'abs_url',
@@ -188,6 +199,9 @@ class HtmlCleaner {
 		);
 	}
 
+	/**
+	 * @todo Expand this maybe?
+	 */
 	public function strictTag($tag, $attribute) {
 		// transform tag
 		if ($tag == 'center') {
@@ -248,6 +262,10 @@ class HtmlCleaner {
 		return array('tag' => $tag, 'attribute' => $attribute);
 	}
 
+
+	/**
+	 * @todo finish conversion on this, right now it just a copy/paste.
+	 */
 	function hl_tag($t) {
 		// tag/attribute handler
 		$t = $t[0];
@@ -454,5 +472,92 @@ class HtmlCleaner {
 		}
 		else{return $config['hook_tag']($e, $a);}
 		// eof
+	}
+
+
+
+
+
+	/* All the helper functions that will instantiate parts of the settings */
+
+	/** 
+	 * Set up a list of attributes that we either will or will not accept inside tags.
+	 * This list is independent of whether or not we want to keep them or get rid of them
+	 *
+	 * @param array $attributes - Optional parameter list of attributes.
+	 * @return array - A list of HTML Tag attributes
+	 */
+	private function setAttributeList($attributes = array()) {
+		if (empty($attributes)) {
+			return array();
+		}
+
+		//Clean up the list, make sure there are no extra spaces or newlines, and make everything lowercase
+		foreach ($attributes as $key => $attr) {
+			$attr = strtolower($attr);
+
+			if (strpos($attr, 'on*') !== false) {
+				unset($attributes[$key]);
+				$addOn = true;
+				continue;	//Skip to the next one
+			}
+			$attributes[$key] = str_replace(array("\n", "\r", "\t", ' ', '*'), '', strtolower($attr));
+		}
+
+		if (isst($addOn) && $addOn) {
+			$attributes = array_merge(
+				$attributes, 
+				array(	//JavaScript event handlers
+					'onblur',
+					'onchange',
+					'onclick',
+					'ondblclick',
+					'onfocus',
+					'onkeydown',
+					'onkeypress',
+					'onkeyup',
+					'onmousedown',
+					'onmousemove',
+					'onmouseout',
+					'onmouseover',
+					'onmouseup',
+					'onreset',
+					'onselect',
+					'onsubmit'
+				),
+			);
+		}
+		return $attributes;
+	}
+
+	/** 
+	 * @todo set up input to an easier-to-remember format than type: name, name; type: name name
+	 * 		Last type list does not recieve a trailing ;
+	 */
+	private function setAvaialbleProtocols($protocols = 'href: http, https') {
+		if (empty($protocols)) {
+			//Defaults from htmLawed, but we don't need that many for testing.
+			//$protocols = 'href: aim, feed, file, ftp, gopher, http, https, irc, mailto, news, nntp, sftp, ssh, telnet; *:file, http, https';
+			$protocols = 'href: http, https';
+		}
+
+		//Figure out a better name for this
+		$return = array();
+
+		foreach (explode(';', str_replace(array(' ', "\t", "\r", "\n"), '', $protocols)) as $protocol) {
+			list($type, $acceptable) = explode(':', $protocol, 2);
+			if ($acceptable) { 
+		 		$return[$type] = array_flip(explode(',', $acceptable));
+			}
+		}
+
+		if (!isset($return['*'])) {
+			$return['*'] = array('file' => 1, 'http' => 1, 'https' => 1);
+		}
+		if (!empty($this->settings['safe']) && empty($return['style'])) {
+			$return['style'] = array('!' => 1);
+		}
+
+		return $return;
 	}
 }

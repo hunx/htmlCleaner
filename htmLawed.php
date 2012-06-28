@@ -17,7 +17,7 @@ function htmLawed($t, $config = 1, $S = array()) {
 		$config['xml:lang'] = isset($config['xml:lang']) ? $config['xml:lang'] : 2;
 	}
 
-	// config eles
+	// config available tags
 	$element = array(
 		'a'=>1, 'abbr'=>1, 'acronym'=>1, 'address'=>1, 'applet'=>1, 'area'=>1, 'b'=>1, 'bdo'=>1, 'big'=>1, 'blockquote'=>1, 'br'=>1, 'button'=>1, 'caption'=>1, 'center'=>1, 'cite'=>1, 'code'=>1, 'col'=>1, 'colgroup'=>1, 'dd'=>1, 'del'=>1, 'dfn'=>1, 'dir'=>1, 'div'=>1, 'dl'=>1, 'dt'=>1, 'em'=>1, 'embed'=>1, 'fieldset'=>1, 'font'=>1, 'form'=>1, 'h1'=>1, 'h2'=>1, 'h3'=>1, 'h4'=>1, 'h5'=>1, 'h6'=>1, 'hr'=>1, 'i'=>1, 'iframe'=>1, 'img'=>1, 'input'=>1, 'ins'=>1, 'isindex'=>1, 'kbd'=>1, 'label'=>1, 'legend'=>1, 'li'=>1, 'map'=>1, 'menu'=>1, 'noscript'=>1, 'object'=>1, 'ol'=>1, 'optgroup'=>1, 'option'=>1, 'p'=>1, 'param'=>1, 'pre'=>1, 'q'=>1, 'rb'=>1, 'rbc'=>1, 'rp'=>1, 'rt'=>1, 'rtc'=>1, 'ruby'=>1, 's'=>1, 'samp'=>1, 'script'=>1, 'select'=>1, 'small'=>1, 'span'=>1, 'strike'=>1, 'strong'=>1, 'sub'=>1, 'sup'=>1, 'table'=>1, 'tbody'=>1, 'td'=>1, 'textarea'=>1, 'tfoot'=>1, 'th'=>1, 'thead'=>1, 'tr'=>1, 'tt'=>1, 'u'=>1, 'ul'=>1, 'var'=>1); // 86/deprecated+embed+ruby
 
@@ -51,6 +51,7 @@ function htmLawed($t, $config = 1, $S = array()) {
 		}
 	}
 
+	//Assign by reference
 	$config['elements'] =& $element;
 
 	// config attrs
@@ -67,10 +68,15 @@ function htmLawed($t, $config = 1, $S = array()) {
 	$config['deny_attribute'] = $deniedAttributes;
 
 	// config URL
-	$acceptableProtocols = 'href: http, https';
+	$acceptableProtocols = 'href: http, https';		//Use this as default temporarily
+	/**
+	 * @todo remove temporary default
+	 */
+	/*$acceptableProtocols = (isset($config['schemes'][2]) && strpos($config['schemes'], ':')) 
+		? strtolower($config['schemes']) 
+		: 'href: aim, feed, file, ftp, gopher, http, https, irc, mailto, news, nntp, sftp, ssh, telnet; *:file, http, https'; */
 	$config['schemes'] = array();
 	foreach (explode(';', str_replace(array(' ', "\t", "\r", "\n"), '', $acceptableProtocols)) as $protocol) {
-		$acceptableProtocols = $acceptableProtocols2 = null;
 		list($protocolType, $acceptable) = explode(':', $protocol, 2);
 		if ($acceptable) { 
 	 		$config['schemes'][$protocolType] = array_flip(explode(',', $acceptable));
@@ -90,33 +96,34 @@ function htmLawed($t, $config = 1, $S = array()) {
 	if (!isset($config['base_url']) or !preg_match('`^[a-zA-Z\d.+\-]+://[^/]+/(.+?/)?$`', $config['base_url'])) {
 		$config['base_url'] = $config['abs_url'] = 0;
 	}
-echo "<pre>";
-print_r($config);
-echo "</pre>";die;
+
 // config rest
-$config['and_mark'] = empty($config['and_mark']) ? 0 : 1;
-$config['anti_link_spam'] = (isset($config['anti_link_spam']) && is_array($config['anti_link_spam']) && count($config['anti_link_spam']) == 2 && (empty($config['anti_link_spam'][0]) or hl_regex($config['anti_link_spam'][0])) && (empty($config['anti_link_spam'][1]) or hl_regex($config['anti_link_spam'][1]))) ? $config['anti_link_spam'] : 0;
-$config['anti_mail_spam'] = isset($config['anti_mail_spam']) ? $config['anti_mail_spam'] : 0;
-$config['balance'] = isset($config['balance']) ? (bool)$config['balance'] : 1;
-$config['cdata'] = isset($config['cdata']) ? $config['cdata'] : (empty($config['safe']) ? 3 : 0);
-$config['clean_ms_char'] = empty($config['clean_ms_char']) ? 0 : $config['clean_ms_char'];
-$config['comment'] = isset($config['comment']) ? $config['comment'] : (empty($config['safe']) ? 3 : 0);
-$config['css_expression'] = empty($config['css_expression']) ? 0 : 1;
-$config['direct_list_nest'] = empty($config['direct_list_nest']) ? 0 : 1;
-$config['hexdec_entity'] = isset($config['hexdec_entity']) ? $config['hexdec_entity'] : 1;
-$config['hook'] = (!empty($config['hook']) && function_exists($config['hook'])) ? $config['hook'] : 0;
-$config['hook_tag'] = (!empty($config['hook_tag']) && function_exists($config['hook_tag'])) ? $config['hook_tag'] : 0;
-$config['keep_bad'] = isset($config['keep_bad']) ? $config['keep_bad'] : 6;
-$config['lc_std_val'] = isset($config['lc_std_val']) ? (bool)$config['lc_std_val'] : 1;
-$config['make_tag_strict'] = isset($config['make_tag_strict']) ? $config['make_tag_strict'] : 1;
-$config['named_entity'] = isset($config['named_entity']) ? (bool)$config['named_entity'] : 1;
-$config['no_deprecated_attr'] = isset($config['no_deprecated_attr']) ? $config['no_deprecated_attr'] : 1;
-$config['parent'] = isset($config['parent'][0]) ? strtolower($config['parent']) : 'body';
-$config['show_setting'] = !empty($config['show_setting']) ? $config['show_setting'] : 0;
-$config['style_pass'] = empty($config['style_pass']) ? 0 : 1;
-$config['tidy'] = empty($config['tidy']) ? 0 : $config['tidy'];
-$config['unique_ids'] = isset($config['unique_ids']) ? $config['unique_ids'] : 1;
-$config['xml:lang'] = isset($config['xml:lang']) ? $config['xml:lang'] : 0;
+	$config['and_mark'] = empty($config['and_mark']) ? 0 : 1;
+	$config['anti_link_spam'] = (isset($config['anti_link_spam']) && is_array($config['anti_link_spam']) && count($config['anti_link_spam']) == 2 && (empty($config['anti_link_spam'][0]) or hl_regex($config['anti_link_spam'][0])) && (empty($config['anti_link_spam'][1]) or hl_regex($config['anti_link_spam'][1]))) ? $config['anti_link_spam'] : 0;
+	$config['anti_mail_spam'] = isset($config['anti_mail_spam']) ? $config['anti_mail_spam'] : 0;
+	$config['balance'] = isset($config['balance']) ? (bool)$config['balance'] : 1;
+	$config['cdata'] = isset($config['cdata']) ? $config['cdata'] : (empty($config['safe']) ? 3 : 0);
+	$config['clean_ms_char'] = empty($config['clean_ms_char']) ? 0 : $config['clean_ms_char'];
+	$config['comment'] = isset($config['comment']) ? $config['comment'] : (empty($config['safe']) ? 3 : 0);
+	$config['css_expression'] = empty($config['css_expression']) ? 0 : 1;
+	$config['direct_list_nest'] = empty($config['direct_list_nest']) ? 0 : 1;
+	$config['hexdec_entity'] = isset($config['hexdec_entity']) ? $config['hexdec_entity'] : 1;
+	$config['hook'] = (!empty($config['hook']) && function_exists($config['hook'])) ? $config['hook'] : 0;
+	$config['hook_tag'] = (!empty($config['hook_tag']) && function_exists($config['hook_tag'])) ? $config['hook_tag'] : 0;
+	$config['keep_bad'] = isset($config['keep_bad']) ? $config['keep_bad'] : 6;
+	$config['lc_std_val'] = isset($config['lc_std_val']) ? (bool)$config['lc_std_val'] : 1;
+	$config['make_tag_strict'] = isset($config['make_tag_strict']) ? $config['make_tag_strict'] : 1;
+	$config['named_entity'] = isset($config['named_entity']) ? (bool)$config['named_entity'] : 1;
+	$config['no_deprecated_attr'] = isset($config['no_deprecated_attr']) ? $config['no_deprecated_attr'] : 1;
+	$config['parent'] = isset($config['parent'][0]) ? strtolower($config['parent']) : 'body';
+	$config['show_setting'] = !empty($config['show_setting']) ? $config['show_setting'] : 0;
+	$config['style_pass'] = empty($config['style_pass']) ? 0 : 1;
+	$config['tidy'] = empty($config['tidy']) ? 0 : $config['tidy'];
+	$config['unique_ids'] = isset($config['unique_ids']) ? $config['unique_ids'] : 1;
+	$config['xml:lang'] = isset($config['xml:lang']) ? $config['xml:lang'] : 0;
+	echo "<pre>";
+	print_r($config);
+	echo "</pre>";die;
 
 if(isset($GLOBALS['C'])){$reC = $GLOBALS['C'];}
 $GLOBALS['C'] = $config;
