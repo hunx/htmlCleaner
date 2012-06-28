@@ -1,6 +1,9 @@
 HtmlCleaner
 ===========
 
+> This code is not currently in a functional state and is still (as of 6/28/2012)
+> in a state of being refactored.
+
 A refactoring (to a class) of PHP Labware's fantastic htmLawed function library 
 (<a href="http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/index.php">found here</a>), 
 created by Dr. Santosh Patnaik.
