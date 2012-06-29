@@ -4,9 +4,7 @@ HtmlCleaner
 > This code is not currently in a functional state and is still (as of 6/28/2012)
 > in a state of being refactored.
 
-A refactoring (to a class) of PHP Labware's fantastic htmLawed function library 
-(<a href="http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/index.php">found here</a>), 
-created by Dr. Santosh Patnaik.
+A refactoring (to a class) of PHP Labware's fantastic  <a href="http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/index.php">htmLawed function library</a>.
 
 **Why?**
 
@@ -22,6 +20,8 @@ product. Any logic/functionality changes will be shunted off into the class file
 
 **Last little bit**
 
-The original HTMLawed is avaialble through Dual licensed with 
+The original htmLawed is avaialble through Dual licensed with 
 <a href="http://www.gnu.org/licenses/lgpl.html">LGPL 3</a> and 
 <a href="http://www.gnu.org/licenses/gpl-2.0.html">GPL 2</a> or later, and so is this.
+
+The original htmLawed is copyrighted by Santosh Patnaik, MD, PhD.
