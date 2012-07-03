@@ -1,8 +1,8 @@
 HtmlCleaner
 ===========
 
-> This code is not currently in a functional state and is still (as of 6/28/2012)
-> in a state of being refactored.
+> htmLawed.class.php is in a functional state. htmlCleaner.class.php is not (as of 7/3/2012).
+> Sample invocation code is in test-suite.php until a permanent method has been agreed upon.
 
 A refactoring (to a class) of PHP Labware's fantastic  <a href="http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/index.php">htmLawed function library</a>.
 
