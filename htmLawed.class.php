@@ -1126,10 +1126,10 @@ class htmLawed {
 			if (preg_match('`face\s*=\s*(\'|")([^=]+?)\\1`i', $a, $m) || preg_match('`face\s*=(\s*)(\S+)`i', $a, $m)) {
 				$a2 .= ' font-family: '. str_replace('"', '\'', trim($m[2])). ';';
 			}
-			if (preg_match('`color\s*=\s*(?:\'|")?(.+?)(\\1|\s|$)`i', $a, $m)) {
+			if (preg_match('`color\s*=\s*(\'|")?(.+?)(\\1|\s|$)`i', $a, $m)) {
 				$a2 .= ' color: '. trim($m[2]). ';';
 			}
-			if (preg_match('`size\s*=\s*(?:\'|")?(.+?)(\\1|\s|$)`i', $a, $m) && isset($fs[($m = trim($m[2]))])) {
+			if (preg_match('`size\s*=\s*(\'|")?(.+?)(\\1|\s|$)`i', $a, $m) && isset($fs[($m = trim($m[2]))])) {
 				$a2 .= ' font-size: '. $fs[$m]. ';';
 			}
 			$e = 'span';
