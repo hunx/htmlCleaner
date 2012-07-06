@@ -2,9 +2,9 @@
 
 /*
 htmLawedTest.php, 22 October 2011
-htmLawed 1.1.11, 5 June 2012
+htmLawed 1.1.12, 5 July 2012
 Copyright Santosh Patnaik
-Dual licensed with LGPL 3 and GPL 2 or later
+Dual licensed with LGPL 3 and GPL 2+
 A PHP Labware internal utility - http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed
 
 Test htmLawed; user provides text input; input and processed input are shown as highlighted code and rendered HTML; also shown are execution time and peak memory usage
@@ -322,7 +322,7 @@ tRs = {
  },
  adBtn: function(){
   var textareas = document.getElementsByTagName('textarea');
-  for(var i = 0; i < textareas.length; i++){	
+  for(var i = 0; i < textareas.length; i++){  
    var txtclass=textareas[i].className;
    if(txtclass.substring(0,tRs.resizeClass.length)==tRs.resizeClass ||
    txtclass.substring(txtclass.length -tRs.resizeClass.length)==tRs.resizeClass){
@@ -333,7 +333,7 @@ tRs = {
     a.title = 'click-drag to resize textarea'
     tRs.adEv(a, 'mousedown', tRs.initResize);
     textareas[i].parentNode.appendChild(a);
-   }	
+   }  
   }
  },
  initResize: function(event){
@@ -363,7 +363,7 @@ tRs = {
   if(typeof event == 'undefined'){
    event = window.event;
   }
-	if(tRs.formEl.nodeName.toLowerCase() == 'textarea'){
+  if(tRs.formEl.nodeName.toLowerCase() == 'textarea'){
    tRs.formEl.style.height = event.clientY - tRs.formEl.startY + tRs.formEl.startHeight + 'px';
   }
  },
