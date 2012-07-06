@@ -180,31 +180,74 @@ function htmLawed($html, $config = 1, $spec = array()) {
 	// eof
 }
 
-function hl_attrval($t, $p){
-	// check attr val against $S
-	$o = 1; $l = strlen($t);
-	foreach($p as $k=>$v){
-	 switch($k){
-		case 'maxlen':if($l > $v){$o = 0;}
-		break; case 'minlen': if($l < $v){$o = 0;}
-		break; case 'maxval': if((float)($t) > $v){$o = 0;}
-		break; case 'minval': if((float)($t) < $v){$o = 0;}
-		break; case 'match': if(!preg_match($v, $t)){$o = 0;}
-		break; case 'nomatch': if(preg_match($v, $t)){$o = 0;}
-		break; case 'oneof':
-		 $m = 0;
-		 foreach(explode('|', $v) as $n){if($t == $n){$m = 1; break;}}
-		 $o = $m;
-		break; case 'noneof':
-		 $m = 1;
-		 foreach(explode('|', $v) as $n){if($t == $n){$m = 0; break;}}
-		 $o = $m;
-		break; default:
-		break;
-	 }
-	 if(!$o){break;}
+
+function hl_attrval ($attrValue, $spec) {
+	// check attr val against $spec
+	/**
+	 * @todo find a better name for $o
+	 */
+	$o = 1;
+	$length = strlen($attrValue);
+	foreach ($spec as $key => $value) {
+		switch ($key) {
+			case 'maxlen':
+				if ($length > $value) {
+					$o = 0;
+				}
+			break;
+			case 'minlen':
+				if ($length < $value) {
+					$o = 0;
+				}
+			break;
+			case 'maxval':
+				if ((float)($attrValue) > $value) {
+					$o = 0;
+				}
+			break;
+			case 'minval':
+				if ((float)($attrValue) < $value) {
+					$o = 0;
+				}
+			break;
+			case 'match':
+				if (!preg_match($value, $attrValue)) {
+					$o = 0;
+				}
+			break;
+			case 'nomatch':
+				if (preg_match($value, $attrValue)) {
+					$o = 0;
+				}
+			break;
+			case 'oneof':
+				$m = 0;
+				foreach (explode('|', $value) as $n) {
+					if ($attrValue == $n) {
+						$m = 1;
+						break;
+					}
+				}
+				$o = $m;
+			break;
+			case 'noneof':
+				$m = 1;
+				foreach (explode('|', $value) as $n) {
+					if ($attrValue == $n) {
+						$m = 0;
+						break;
+					}
+				}
+				$o = $m;
+			break;
+			default:
+			break;
+		}
+		if (!$o) {
+			break;
+		}
 	}
-	return ($o ? $t : (isset($p['default']) ? $p['default'] : 0));
+	return ($o ? $attrValue : (isset($spec['default']) ? $spec['default'] : 0));
 	// eof
 }
 
@@ -651,7 +694,7 @@ function hl_tag($tag) {
 	$attr = array();
 	$nfr = 0;
 
-	foreach ($attributes as $kkey => $value) {
+	foreach ($attributes as $key => $value) {
 		if (
 	 		(
 	 			(isset($config['deny_attribute']['*']) ? isset($config['deny_attribute'][$key]) : !isset($config['deny_attribute'][$key])) || 
@@ -840,84 +883,138 @@ function hl_tag($tag) {
 	// eof
 }
 
-function hl_tag2 (&$e, &$a, $t=1) {
+/**
+ * @todo figure out what to rename $t
+ */
+function hl_tag2 (&$tag, &$attributes, $t=1) {
 	// transform tag
-	if($e == 'center'){$e = 'div'; return 'text-align: center;';}
-	if($e == 'dir' or $e == 'menu'){$e = 'ul'; return '';}
-	if($e == 's' or $e == 'strike'){$e = 'span'; return 'text-decoration: line-through;';}
-	if($e == 'u'){$e = 'span'; return 'text-decoration: underline;';}
-	static $fs = array('0'=>'xx-small', '1'=>'xx-small', '2'=>'small', '3'=>'medium', '4'=>'large', '5'=>'x-large', '6'=>'xx-large', '7'=>'300%', '-1'=>'smaller', '-2'=>'60%', '+1'=>'larger', '+2'=>'150%', '+3'=>'200%', '+4'=>'300%');
-	if($e == 'font'){
-	 $a2 = '';
-	 if(preg_match('`face\s*=\s*(\'|")([^=]+?)\\1`i', $a, $m) or preg_match('`face\s*=(\s*)(\S+)`i', $a, $m)){ 
-		$a2 .= ' font-family: '. str_replace('"', '\'', trim($m[2])). ';';
-	 }
-	 if(preg_match('`color\s*=\s*(\'|")?(.+?)(\\1|\s|$)`i', $a, $m)){
-		$a2 .= ' color: '. trim($m[2]). ';';
-	 }
-	 if(preg_match('`size\s*=\s*(\'|")?(.+?)(\\1|\s|$)`i', $a, $m) && isset($fs[($m = trim($m[2]))])){
-		$a2 .= ' font-size: '. $fs[$m]. ';';
-	 }
-	 $e = 'span'; return ltrim($a2);
+	if ($tag == 'center') {
+		$tag = 'div';
+		return 'text-align: center;';
 	}
-	if($t == 2){$e = 0; return 0;}
+	if ($tag == 'dir' || $tag == 'menu') {
+		$tag = 'ul';
+		return '';
+	}
+	if ($tag == 's' || $tag == 'strike') {
+		$tag = 'span';
+		return 'text-decoration: line-through;';
+	}
+	if ($tag == 'u') {
+		$tag = 'span';
+		return 'text-decoration: underline;';
+	}
+	static $fontSizes = array('0'=>'xx-small', '1'=>'xx-small', '2'=>'small', '3'=>'medium', '4'=>'large', '5'=>'x-large', '6'=>'xx-large', '7'=>'300%', '-1'=>'smaller', '-2'=>'60%', '+1'=>'larger', '+2'=>'150%', '+3'=>'200%', '+4'=>'300%');
+	if ($tag == 'font') {
+		$attr = '';
+		if (
+			preg_match('`face\s*=\s*(\'|")([^=]+?)\\1`i', $attributes, $match) || 
+			preg_match('`face\s*=(\s*)(\S+)`i', $attributes, $match)
+		) { 
+			$attr .= ' font-family: ' . str_replace('"', '\'', trim($match[2])) . ';';
+		}
+		if (preg_match('`color\s*=\s*(\'|")?(.+?)(\\1|\s|$)`i', $attributes, $match)) {
+			$attr .= ' color: ' . trim($m[2]) . ';';
+		}
+		if (
+			preg_match('`size\s*=\s*(\'|")?(.+?)(\\1|\s|$)`i', $attributes, $match) && 
+			isset($fontSizes[($match = trim($match[2]))])
+		){
+		$attr .= ' font-size: ' . $fontSizes[$match] . ';';
+		}
+		$tag = 'span';
+		return ltrim($attr);
+	}
+	
+	if ($t == 2) {
+		$tag = 0;
+		return 0;
+	}
 	return '';
 	// eof
+}
+//function hl_tidy ($t, $w, $p) {
+function hl_tidy ($html, $tidy, $parent) {
+	// Tidy/compact HTM
+	if (strpos(' pre,script,textarea', "$parent,")) {
+		return $html;
 	}
 
-	function hl_tidy($t, $w, $p){
-	// Tidy/compact HTM
-	if(strpos(' pre,script,textarea', "$p,")){return $t;}
-	$t = str_replace(' </', '</', preg_replace(array('`(<\w[^>]*(?<!/)>)\s+`', '`\s+`', '`(<\w[^>]*(?<!/)>) `'), array(' $1', ' ', '$1'), preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'), create_function('$m', 'return $m[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $m[3]). $m[4];'), $t)));
-	if(($w = strtolower($w)) == -1){
-	 return str_replace(array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), array('<', '>', "\n", "\r", "\t", ' '), $t);
+	$html = str_replace(' </', '</', preg_replace(array('`(<\w[^>]*(?<!/)>)\s+`', '`\s+`', '`(<\w[^>]*(?<!/)>) `'), array(' $1', ' ', '$1'), preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'), create_function('$m', 'return $m[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $m[3]). $m[4];'), $html)));
+	if (($tidy = strtolower($tidy)) == -1) {
+		return str_replace(array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), array('<', '>', "\n", "\r", "\t", ' '), $html);
 	}
-	$s = strpos(" $w", 't') ? "\t" : ' ';
-	$s = preg_match('`\d`', $w, $m) ? str_repeat($s, $m[0]) : str_repeat($s, ($s == "\t" ? 1 : 2));
-	$n = preg_match('`[ts]([1-9])`', $w, $m) ? $m[1] : 0;
+	
+	$string = strpos(" $tidy", 't') ? "\t" : ' ';
+	$string = preg_match('`\d`', $parent, $match) ? str_repeat($string, $match[0]) : str_repeat($string, ($string == "\t" ? 1 : 2));
+	/**
+	 * @todo figure out what to rename $n, $a, $b, $c, $d
+	 */
+	$n = preg_match('`[ts]([1-9])`', $parent, $match) ? $match[1] : 0;
 	$a = array('br'=>1);
 	$b = array('button'=>1, 'input'=>1, 'option'=>1);
 	$c = array('caption'=>1, 'dd'=>1, 'dt'=>1, 'h1'=>1, 'h2'=>1, 'h3'=>1, 'h4'=>1, 'h5'=>1, 'h6'=>1, 'isindex'=>1, 'label'=>1, 'legend'=>1, 'li'=>1, 'object'=>1, 'p'=>1, 'pre'=>1, 'td'=>1, 'textarea'=>1, 'th'=>1);
 	$d = array('address'=>1, 'blockquote'=>1, 'center'=>1, 'colgroup'=>1, 'dir'=>1, 'div'=>1, 'dl'=>1, 'fieldset'=>1, 'form'=>1, 'hr'=>1, 'iframe'=>1, 'map'=>1, 'menu'=>1, 'noscript'=>1, 'ol'=>1, 'optgroup'=>1, 'rbc'=>1, 'rtc'=>1, 'ruby'=>1, 'script'=>1, 'select'=>1, 'table'=>1, 'tfoot'=>1, 'thead'=>1, 'tr'=>1, 'ul'=>1);
+	
 	ob_start();
-	if(isset($d[$p])){echo str_repeat($s, ++$n);}
-	$t = explode('<', $t);
-	echo ltrim(array_shift($t));
-	for($i=-1, $j=count($t); ++$i<$j;){
-	 $r = ''; list($e, $r) = explode('>', $t[$i]);
-	 $x = $e[0] == '/' ? 0 : (substr($e, -1) == '/' ? 1 : ($e[0] != '!' ? 2 : -1));
-	 $y = !$x ? ltrim($e, '/') : ($x > 0 ? substr($e, 0, strcspn($e, ' ')) : 0);
-	 $e = "<$e>"; 
-	 if(isset($d[$y])){
-		if(!$x){echo "\n", str_repeat($s, --$n), "$e\n", str_repeat($s, $n);}
-		else{echo "\n", str_repeat($s, $n), "$e\n", str_repeat($s, ($x != 1 ? ++$n : $n));}
-		echo ltrim($r); continue;
-	 }
-	 $f = "\n". str_repeat($s, $n);
-	 if(isset($c[$y])){
-		if(!$x){echo $e, $f, ltrim($r);}
-		else{echo $f, $e, $r;}
-	 }elseif(isset($b[$y])){echo $f, $e, $r;
-	 }elseif(isset($a[$y])){echo $e, $f, ltrim($r);
-	 }elseif(!$y){echo $f, $e, $f, ltrim($r);
-	 }else{echo $e, $r;}
+	if (isset($d[$parent])) {
+		echo str_repeat($string, ++$n);
 	}
-	$t = preg_replace('`[\n]\s*?[\n]+`', "\n", ob_get_contents());
+	$html = explode('<', $html);
+	echo ltrim(array_shift($html));
+	for ($i=-1, $j = count($html); ++$i < $j;) {
+		$r = '';
+		list($e, $r) = explode('>', $html[$i]);
+		$x = $e[0] == '/' ? 0 : (substr($e, -1) == '/' ? 1 : ($e[0] != '!' ? 2 : -1));
+		$y = !$x ? ltrim($e, '/') : ($x > 0 ? substr($e, 0, strcspn($e, ' ')) : 0);
+		$e = "<$e>"; 
+		if (isset($d[$y])) {
+			if (!$x) {
+				echo "\n", str_repeat($string, --$n), "$e\n", str_repeat($string, $n);
+			} else {
+				echo "\n", str_repeat($string, $n), "$e\n", str_repeat($string, ($x != 1 ? ++$n : $n));
+			}
+			echo ltrim($r);
+			continue;
+		}
+		$f = "\n" . str_repeat($string, $n);
+		if (isset($c[$y])) {
+			if (!$x) {
+				echo $e, $f, ltrim($r);
+			} else {
+				echo $f, $e, $r;
+			}
+		} elseif (isset($b[$y])) {
+			echo $f, $e, $r;
+		} elseif (isset($a[$y])) {
+			echo $e, $f, ltrim($r);
+		} elseif (!$y) {
+			echo $f, $e, $f, ltrim($r);
+		} else {
+			echo $e, $r;
+		}
+	}
+
+	$html = preg_replace('`[\n]\s*?[\n]+`', "\n", ob_get_contents());
 	ob_end_clean();
-	if(($l = strpos(" $w", 'r') ? (strpos(" $w", 'n') ? "\r\n" : "\r") : 0)){
-	 $t = str_replace("\n", $l, $t);
+
+	if (($l = strpos(" $tidy", 'r') ? (strpos(" $tidy", 'n') ? "\r\n" : "\r") : 0)) {
+		$html = str_replace("\n", $l, $html);
 	}
-	return str_replace(array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), array('<', '>', "\n", "\r", "\t", ' '), $t);
+	return str_replace(array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), array('<', '>', "\n", "\r", "\t", ' '), $html);
 	// eof
 }
 
-function hl_version(){
+function hl_version() {
 	// rel
-	return '1.1.11';
+	return '1.1.12';
 	// eof
 }
 
-function kses($t, $h, $p=array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'gopher', 'mailto')){
+/**
+ * @todo does anything actually call these two functions?
+ */
+function kses($t, $h, $p=array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'gopher', 'mailto')) {
 	// kses compat
 	foreach($h as $k=>$v){
 	 $h[$k]['n']['*'] = 1;
@@ -929,9 +1026,9 @@ function kses($t, $h, $p=array('http', 'https', 'ftp', 'news', 'nntp', 'telnet',
 	$config['schemes'] = '*:'. implode(',', $p);
 	return htmLawed($t, $config, $h);
 	// eof
-	}
+}
 
-	function kses_hook($t, &$config, &$S){
+function kses_hook($t, &$config, &$S){
 	// kses compat
 	return $t;
 	// eof
