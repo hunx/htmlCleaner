@@ -1123,10 +1123,8 @@ class htmLawed {
 		);
 		if ($e == 'font') {
 			$a2 = '';
-			if (preg_match('`face\s*=\s*(\'|")([^=]+?)\\1`i', $a, $m)) {
+			if (preg_match('`face\s*=\s*(\'|")([^=]+?)\\1`i', $a, $m) || preg_match('`face\s*=(\s*)(\S+)`i', $a, $m)) {
 				$a2 .= ' font-family: '. str_replace('"', '\'', trim($m[2])). ';';
-			} elseif (preg_match('`face\s*=\s*(\S+)`i', $a, $m)) {
-				$a2 .= ' font-family: '. str_replace('"', '\'', trim($m[1])). ';';
 			}
 			if (preg_match('`color\s*=\s*(?:\'|")?(.+?)(\\1|\s|$)`i', $a, $m)) {
 				$a2 .= ' color: '. trim($m[2]). ';';
