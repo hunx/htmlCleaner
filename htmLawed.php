@@ -251,7 +251,8 @@ function hl_attrval ($attrValue, $spec) {
 	// eof
 }
 
-function hl_bal($html, $do = 1, $in = 'div') {
+//function hl_bal($t, $do = 1, $in = 'div') {
+function hl_bal($html, $keepBad = 1, $parent = 'div') {
 	// balance tags
 	// by content
 
@@ -278,136 +279,240 @@ function hl_bal($html, $do = 1, $in = 'div') {
 	$eO = array('area'=>1, 'caption'=>1, 'col'=>1, 'colgroup'=>1, 'dd'=>1, 'dt'=>1, 'legend'=>1, 'li'=>1, 'optgroup'=>1, 'option'=>1, 'param'=>1, 'rb'=>1, 'rbc'=>1, 'rp'=>1, 'rt'=>1, 'rtc'=>1, 'script'=>1, 'tbody'=>1, 'td'=>1, 'tfoot'=>1, 'thead'=>1, 'th'=>1, 'tr'=>1); // Missing in $eB & $eI
 	$eF = $eB + $eI;
 
-	// $in sets allowed child
-	$in = ((isset($eF[$in]) && $in != '#pcdata') or isset($eO[$in])) ? $in : 'div';
-	if(isset($empty[$in])){
-	 return (!$do ? '' : str_replace(array('<', '>'), array('&lt;', '&gt;'), $t));
+	// $parent sets allowed child
+	$parent = ((isset($eF[$parent]) && $parent != '#pcdata') or isset($eO[$parent])) ? $parent : 'div';
+	if (isset($empty[$parent])) {
+		return (!$keepBad ? '' : str_replace(array('<', '>'), array('&lt;', '&gt;'), $html));
 	}
-	if(isset($parentChild[$in])){$inOk = $parentChild[$in];}
-	elseif(isset($inline[$in])){$inOk = $eI; $inline['del'] = 1; $inline['ins'] = 1;}
-	elseif(isset($flow[$in])){$inOk = $eF; unset($inline['del'], $inline['ins']);}
-	elseif(isset($block[$in])){$inOk = $eB; unset($inline['del'], $inline['ins']);}
-	if(isset($other[$in])){$inOk = $inOk + $other[$in];}
-	if(isset($illegal[$in])){$inOk = array_diff_assoc($inOk, $illegal[$in]);}
+	if (isset($parentChild[$parent])) {
+		$parentOk = $parentChild[$parent];
+	} elseif (isset($inline[$parent])) {
+		$parentOk = $eI;
+		$inline['del'] = 1;
+		$inline['ins'] = 1;
+	} elseif (isset($flow[$parent])) {
+		$parentOk = $eF;
+		unset($inline['del'], $inline['ins']);
+	} elseif (isset($block[$parent])) {
+		$parentOk = $eB;
+		unset($inline['del'], $inline['ins']);
+	}
 
-	$t = explode('<', $t);
+	if (isset($other[$parent])) {
+		$parentOk = $parentOk + $other[$parent];
+	}
+	if (isset($illegal[$parent])) {
+		$parentOk = array_diff_assoc($parentOk, $illegal[$parent]);
+	}
+
+	$html = explode('<', $html);
 	$ok = $q = array(); // $q seq list of open non-empty ele
 	ob_start();
 
-	for($i=-1, $ci=count($t); ++$i<$ci;){
-	 // allowed $ok in parent $p
-	 if($ql = count($q)){
-		$p = array_pop($q);
-		$q[] = $p;
-		if(isset($parentChild[$p])){$ok = $parentChild[$p];}
-		elseif(isset($inline[$p])){$ok = $eI; $inline['del'] = 1; $inline['ins'] = 1;}
-		elseif(isset($flow[$p])){$ok = $eF; unset($inline['del'], $inline['ins']);}
-		elseif(isset($block[$p])){$ok = $eB; unset($inline['del'], $inline['ins']);}
-		if(isset($other[$p])){$ok = $ok + $other[$p];}
-		if(isset($illegal[$p])){$ok = array_diff_assoc($ok, $illegal[$p]);}
-	 }else{$ok = $inOk; unset($inline['del'], $inline['ins']);}
-	 // bad tags, & ele content
-	 if(isset($e) && ($do == 1 or (isset($ok['#pcdata']) && ($do == 3 or $do == 5)))){
-		echo '&lt;', $s, $e, $a, '&gt;';
-	 }
-	 if(isset($x[0])){
-		if($do < 3 or isset($ok['#pcdata'])){echo $x;}
-		elseif(strpos($x, "\x02\x04")){
-		 foreach(preg_split('`(\x01\x02[^\x01\x02]+\x02\x01)`', $x, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $v){
-			echo (substr($v, 0, 2) == "\x01\x02" ? $v : ($do > 4 ? preg_replace('`\S`', '', $v) : ''));
-		 }
-		}elseif($do > 4){echo preg_replace('`\S`', '', $x);}
-	 }
-	 // get markup
-	 if(!preg_match('`^(/?)([a-zA-Z1-6]+)([^>]*)>(.*)`sm', $t[$i], $r)){$x = $t[$i]; continue;}
-	 $s = null; $e = null; $a = null; $x = null; list($all, $s, $e, $a, $x) = $r;
-	 // close tag
-	 if($s){
-		if(isset($empty[$e]) or !in_array($e, $q)){continue;} // Empty/unopen
-		if($p == $e){array_pop($q); echo '</', $e, '>'; unset($e); continue;} // Last open
-		$add = ''; // Nesting - close open tags that need to be
-		for($j=-1, $cj=count($q); ++$j<$cj;){	
-		 if(($d = array_pop($q)) == $e){break;}
-		 else{$add .= "</{$d}>";}
+	for ($i =- 1, $ci = count($html); ++$i < $ci;) {
+		// allowed $ok in parent $p
+		if ($ql = count($q)) {
+			$p = array_pop($q);
+			$q[] = $p;
+			if (isset($parentChild[$p])) {
+				$ok = $parentChild[$p];
+			} elseif (isset($inline[$p])) {
+				$ok = $eI;
+				$inline['del'] = 1;
+				$inline['ins'] = 1;
+			} elseif (isset($flow[$p])) {
+				$ok = $eF;
+				unset($inline['del'], $inline['ins']);
+			} elseif (isset($block[$p])) {
+				$ok = $eB;
+				unset($inline['del'], $inline['ins']);
+			}
+
+			if (isset($other[$p])) {
+				$ok = $ok + $other[$p];
+			}
+			if (isset($illegal[$p])) {
+				$ok = array_diff_assoc($ok, $illegal[$p]);
+			}
+		} else {
+			$ok = $parentOk;
+			unset($inline['del'], $inline['ins']);
 		}
-		echo $add, '</', $e, '>'; unset($e); continue;
-	 }
-	 // open tag
-	 // $block ele needs $eB ele as child
-	 if(isset($block[$e]) && strlen(trim($x))){
-		$t[$i] = "{$e}{$a}>";
-		array_splice($t, $i+1, 0, 'div>'. $x); unset($e, $x); ++$ci; --$i; continue;
-	 }
-	 if((($ql && isset($block[$p])) or (isset($block[$in]) && !$ql)) && !isset($eB[$e]) && !isset($ok[$e])){
-		array_splice($t, $i, 0, 'div>'); unset($e, $x); ++$ci; --$i; continue;
-	 }
-	 // if no open ele, $in = parent; mostly immediate parent-child relation should hold
-	 if(!$ql or !isset($eN[$e]) or !array_intersect($q, $illegal2)){
-		if(!isset($ok[$e])){
-		 if($ql && isset($omitClose[$p])){echo '</', array_pop($q), '>'; unset($e, $x); --$i;}
-		 continue;
+
+		// bad tags, & ele content
+		if(isset($e) && ($keepBad == 1 or (isset($ok['#pcdata']) && ($keepBad == 3 or $keepBad == 5)))) {
+			echo '&lt;', $s, $e, $a, '&gt;';
 		}
-		if(!isset($empty[$e])){$q[] = $element;}
-		echo '<', $e, $a, '>'; unset($e); continue;
-	 }
-	 // specific parent-child
-	 if(isset($parentChild[$p][$e])){
-		if(!isset($empty[$e])){$q[] = $element;}
-		echo '<', $e, $a, '>'; unset($e); continue;
-	 }
-	 // nesting
-	 $add = '';
-	 $q2 = array();
-	 for($k=-1, $kc=count($q); ++$k<$kc;){
-		$d = $q[$k];
-		$ok2 = array();
-		if(isset($parentChild[$d])){$q2[] = $d; continue;}
-		$ok2 = isset($inline[$d]) ? $eI : $eF;
-		if(isset($other[$d])){$ok2 = $ok2 + $other[$d];}
-		if(isset($illegal[$d])){$ok2 = array_diff_assoc($ok2, $illegal[$d]);}
-		if(!isset($ok2[$e])){
-		 if(!$k && !isset($inOk[$e])){continue 2;}
-		 $add = "</{$d}>";
-		 for(;++$k<$kc;){$add = "</{$q[$k]}>{$add}";}
-		 break;
+		if (isset($x[0])) {
+			if ($keepBad < 3 or isset($ok['#pcdata'])) {
+				echo $x;
+			} elseif (strpos($x, "\x02\x04")) {
+				foreach (preg_split('`(\x01\x02[^\x01\x02]+\x02\x01)`', $x, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $v) {
+					echo (substr($v, 0, 2) == "\x01\x02" ? $v : ($keepBad > 4 ? preg_replace('`\S`', '', $v) : ''));
+				}
+			} elseif ($keepBad > 4) {
+				echo preg_replace('`\S`', '', $x);
+			}
 		}
-		else{$q2[] = $d;}
-	 }
-	 $q = $q2;
-	 if(!isset($empty[$e])){$q[] = $element;}
-	 echo $add, '<', $e, $a, '>'; unset($e); continue;
+		// get markup
+		if (!preg_match('`^(/?)([a-zA-Z1-6]+)([^>]*)>(.*)`sm', $html[$i], $r)) {
+			$x = $html[$i];
+			continue;
+		}
+		$s = $e = $a = $x = null;
+		list($all, $s, $e, $a, $x) = $r;
+		
+		// close tag
+		if ($s) {
+			if (isset($empty[$e]) or !in_array($e, $q)) {
+				continue;
+			} // Empty/unopen
+			if ($p == $e) {
+				array_pop($q); 
+				echo '</', $e, '>';
+				unset($e);
+				continue;
+			} // Last open
+			$add = ''; // Nesting - close open tags that need to be
+			for ($j =- 1, $cj = count($q); ++$j < $cj;) {
+				if (($d = array_pop($q)) == $e) {
+					break;
+				} else {
+					$add .= "</{$d}>";
+				}
+			}
+			echo $add, '</', $e, '>';
+			unset($e);
+			continue;
+		}
+		// open tag
+		// $block ele needs $eB ele as child
+		if (isset($block[$e]) && strlen(trim($x))) {
+			$html[$i] = "{$e}{$a}>";
+			array_splice($html, $i + 1, 0, 'div>' . $x);
+			unset($e, $x);
+			++$ci;
+			--$i;
+			continue;
+		}
+		if ((($ql && isset($block[$p])) || (isset($block[$parent]) && !$ql)) && !isset($eB[$e]) && !isset($ok[$e])) {
+			array_splice($html, $i, 0, 'div>');
+			unset($e, $x);
+			++$ci;
+			--$i;
+			continue;
+		}
+		// if no open ele, $parent = parent; mostly immediate parent-child relation should hold
+		if (!$ql or !isset($eN[$e]) || !array_intersect($q, $illegal2)) {
+			if (!isset($ok[$e])) {
+				if ($ql && isset($omitClose[$p])) {
+					echo '</', array_pop($q), '>';
+					unset($e, $x);
+					--$i;
+				}
+				continue;
+			}
+			if (!isset($empty[$e])) {
+				$q[] = $element;
+			}
+			echo '<', $e, $a, '>'; unset($e); continue;
+		}
+		// specific parent-child
+		if (isset($parentChild[$p][$e])) {
+			if (!isset($empty[$e])) {
+				$q[] = $element;
+			}
+			echo '<', $e, $a, '>'; unset($e); continue;
+		}
+		// nesting
+		$add = '';
+		$q2 = array();
+		for ($k =- 1, $kc = count($q); ++$k<$kc;) {
+			$d = $q[$k];
+			$ok2 = array();
+			if (isset($parentChild[$d])) {
+				$q2[] = $d;
+				continue;
+			}
+			$ok2 = isset($inline[$d]) ? $eI : $eF;
+			if (isset($other[$d])) {
+				$ok2 = $ok2 + $other[$d];
+			}
+			if (isset($illegal[$d])) {
+				$ok2 = array_diff_assoc($ok2, $illegal[$d]);
+			}
+			if (!isset($ok2[$e])) {
+				if (!$k && !isset($parentOk[$e])) {
+					continue 2;
+				}
+				$add = "</{$d}>";
+				for (;++$k<$kc;) {
+					$add = "</{$q[$k]}>{$add}";
+				}
+				break;
+			} else {
+				$q2[] = $d;
+			}
+		}
+
+		$q = $q2;
+		if (!isset($empty[$e])) {
+			$q[] = $element;
+		}
+		echo $add, '<', $e, $a, '>'; unset($e); continue;
 	}
 
 	// end
-	if($ql = count($q)){
-	 $p = array_pop($q);
-	 $q[] = $p;
-	 if(isset($parentChild[$p])){$ok = $parentChild[$p];}
-	 elseif(isset($inline[$p])){$ok = $eI; $inline['del'] = 1; $inline['ins'] = 1;}
-	 elseif(isset($flow[$p])){$ok = $eF; unset($inline['del'], $inline['ins']);}
-	 elseif(isset($block[$p])){$ok = $eB; unset($inline['del'], $inline['ins']);}
-	 if(isset($other[$p])){$ok = $ok + $other[$p];}
-	 if(isset($illegal[$p])){$ok = array_diff_assoc($ok, $illegal[$p]);}
-	}else{$ok = $inOk; unset($inline['del'], $inline['ins']);}
-	if(isset($e) && ($do == 1 or (isset($ok['#pcdata']) && ($do == 3 or $do == 5)))){
-	 echo '&lt;', $s, $e, $a, '&gt;';
-	}
-	if(isset($x[0])){
-	 if(strlen(trim($x)) && (($ql && isset($block[$p])) or (isset($block[$in]) && !$ql))){
-		echo '<div>', $x, '</div>';
-	 }
-	 elseif($do < 3 or isset($ok['#pcdata'])){echo $x;}
-	 elseif(strpos($x, "\x02\x04")){
-		foreach(preg_split('`(\x01\x02[^\x01\x02]+\x02\x01)`', $x, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $v){
-		 echo (substr($v, 0, 2) == "\x01\x02" ? $v : ($do > 4 ? preg_replace('`\S`', '', $v) : ''));
+	if ($ql = count($q)) {
+		$p = array_pop($q);
+		$q[] = $p;
+		if (isset($parentChild[$p])) {
+			$ok = $parentChild[$p];
+		} elseif (isset($inline[$p])) {
+			$ok = $eI;
+			$inline['del'] = 1;
+			$inline['ins'] = 1;
+		} elseif (isset($flow[$p])) {
+			$ok = $eF;
+			unset($inline['del'], $inline['ins']);
+		} elseif (isset($block[$p])) {
+			$ok = $eB;
+			unset($inline['del'], $inline['ins']);
 		}
-	 }elseif($do > 4){echo preg_replace('`\S`', '', $x);}
+	
+		if (isset($other[$p])) {
+			$ok = $ok + $other[$p];
+		}
+		if (isset($illegal[$p])) {
+			$ok = array_diff_assoc($ok, $illegal[$p]);
+		}
+	} else {
+		$ok = $parentOk;
+		unset($inline['del'], $inline['ins']);
 	}
-	while(!empty($q) && ($e = array_pop($q))){echo '</', $e, '>';}
+	if (isset($e) && ($keepBad == 1 || (isset($ok['#pcdata']) && ($keepBad == 3 or $keepBad == 5)))) {
+		echo '&lt;', $s, $e, $a, '&gt;';
+	}
+	if (isset($x[0])) {
+		if(strlen(trim($x)) && (($ql && isset($block[$p])) || (isset($block[$parent]) && !$ql))) {
+			echo '<div>', $x, '</div>';
+		} elseif ($keepBad < 3 || isset($ok['#pcdata'])) {
+			echo $x;
+		} elseif (strpos($x, "\x02\x04")) {
+			foreach (preg_split('`(\x01\x02[^\x01\x02]+\x02\x01)`', $x, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $v) {
+				echo (substr($v, 0, 2) == "\x01\x02" ? $v : ($keepBad > 4 ? preg_replace('`\S`', '', $v) : ''));
+			}
+		} elseif($keepBad > 4) {
+			echo preg_replace('`\S`', '', $x);
+		}
+	}
+	while (!empty($q) && ($e = array_pop($q))) {
+		echo '</', $e, '>';
+	}
 	$o = ob_get_contents();
 	ob_end_clean();
 	return $o;
-// eof
+	// eof
 }
 
 function hl_cmtcd($html) {
@@ -486,18 +591,6 @@ function hl_ent($html) {
 	// eof
 }
 
-
-/*
-$test = hl_prot($value, $key);
-echo "<pre>";
-echo "Value: " . $value . "\n Key: " . $key . "\n"
-echo "Viewing hl_prot\n";
-
-print_r($value);
-echo "</pre>";
-die;
-*/
-//function hl_prot($p, $c=null){
 function hl_prot($attrValue, $attrName = null) {
 	// check URL scheme
 	global $config;
