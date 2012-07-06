@@ -486,36 +486,69 @@ function hl_ent($html) {
 	// eof
 }
 
-function hl_prot($p, $c=null){
+
+/*
+$test = hl_prot($value, $key);
+echo "<pre>";
+echo "Value: " . $value . "\n Key: " . $key . "\n"
+echo "Viewing hl_prot\n";
+
+print_r($value);
+echo "</pre>";
+die;
+*/
+//function hl_prot($p, $c=null){
+function hl_prot($attrValue, $attrName = null) {
 	// check URL scheme
 	global $config;
+	/**
+	 * @todo find better names for $a and $b
+	 */
 	$b = $a = '';
-	if($c == null){$c = 'style'; $b = $p[1]; $a = $p[3]; $p = trim($p[2]);}
-	$c = isset($config['schemes'][$c]) ? $config['schemes'][$c] : $config['schemes']['*'];
-	static $d = 'denied:';
-	if(isset($c['!']) && substr($p, 0, 7) != $d){$p = "$d$p";}
-	if(isset($c['*']) or !strcspn($p, '#?;') or (substr($p, 0, 7) == $d)){return "{$b}{$p}{$a}";} // All ok, frag, query, param
-	if(preg_match('`^([a-z\d\-+.&#; ]+?)(:|&#(58|x3a);|%3a|\\\\0{0,4}3a).`i', $p, $m) && !isset($c[strtolower($m[1])])){ // Denied prot
-	 return "{$b}{$d}{$p}{$a}";
+	if ($attrName == null) {
+		$attrName = 'style';
+		$b = $attrValue[1];
+		$a = $attrValue[3];
+		$attrValue = trim($attrValue[2]);
 	}
-	if($config['abs_url']){
-	 if($config['abs_url'] == -1 && strpos($p, $config['base_url']) === 0){ // Make url rel
-		$p = substr($p, strlen($config['base_url']));
-	 }elseif(empty($m[1])){ // Make URL abs
-		if(substr($p, 0, 2) == '//'){$p = substr($config['base_url'], 0, strpos($config['base_url'], ':')+1). $p;}
-		elseif($p[0] == '/'){$p = preg_replace('`(^.+?://[^/]+)(.*)`', '$1', $config['base_url']). $p;}
-		elseif(strcspn($p, './')){$p = $config['base_url']. $p;}
-		else{
-		 preg_match('`^([a-zA-Z\d\-+.]+://[^/]+)(.*)`', $config['base_url'], $m);
-		 $p = preg_replace('`(?<=/)\./`', '', $m[2]. $p);
-		 while(preg_match('`(?<=/)([^/]{3,}|[^/.]+?|\.[^/.]|[^/.]\.)/\.\./`', $p)){
-			$p = preg_replace('`(?<=/)([^/]{3,}|[^/.]+?|\.[^/.]|[^/.]\.)/\.\./`', '', $p);
-		 }
-		 $p = $m[1]. $p;
+
+	$attrName = isset($config['schemes'][$attrName]) ? $config['schemes'][$attrName] : $config['schemes']['*'];
+	static $denied = 'denied:';
+
+	if (isset($attrName['!']) && substr($attrValue, 0, 7) != $denied) {
+		$attrValue = "$denied$attrValue";
+	}
+	if (isset($attrName['*']) or !strcspn($p, '#?;') or (substr($p, 0, 7) == $denied)) {
+		return "{$b}{$attrValue}{$a}";
+	} // All ok, frag, query, param
+	if (
+		preg_match('`^([a-z\d\-+.&#; ]+?)(:|&#(58|x3a);|%3a|\\\\0{0,4}3a).`i', $attrValue, $match) && 
+		!isset($attrName[strtolower($match[1])])
+	) { // Denied prot
+		return "{$b}{$denied}{$attrValue}{$a}";
+	}
+
+	if ($config['abs_url']) {
+		if ($config['abs_url'] == -1 && strpos($attrValue, $config['base_url']) === 0) { // Make url rel
+			$attrValue = substr($attrValue, strlen($config['base_url']));
+		} elseif (empty($match[1])) { // Make URL abs
+			if (substr($attrValue, 0, 2) == '//') {
+				$attrValue = substr($config['base_url'], 0, strpos($config['base_url'], ':') + 1). $attrValue;
+			} elseif ($attrValue[0] == '/') {
+				$attrValue = preg_replace('`(^.+?://[^/]+)(.*)`', '$1', $config['base_url']) . $attrValue;
+			} elseif (strcspn($attrValue, './')) {
+				$attrValue = $config['base_url']. $attrValue;
+			} else {
+				preg_match('`^([a-zA-Z\d\-+.]+://[^/]+)(.*)`', $config['base_url'], $match);
+				$attrValue = preg_replace('`(?<=/)\./`', '', $match[2]. $attrValue);
+				while (preg_match('`(?<=/)([^/]{3,}|[^/.]+?|\.[^/.]|[^/.]\.)/\.\./`', $attrValue)) {
+					$attrValue = preg_replace('`(?<=/)([^/]{3,}|[^/.]+?|\.[^/.]|[^/.]\.)/\.\./`', '', $attrValue);
+				}
+				$attrValue = $match[1] . $attrValue;
+			}
 		}
-	 }
 	}
-	return "{$b}{$p}{$a}";
+	return "{$b}{$attrValue}{$a}";
 	// eof
 }
 
