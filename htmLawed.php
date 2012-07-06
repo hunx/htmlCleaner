@@ -840,7 +840,7 @@ function hl_tag($tag) {
 	// eof
 }
 
-function hl_tag2(&$e, &$a, $t=1){
+function hl_tag2 (&$e, &$a, $t=1) {
 	// transform tag
 	if($e == 'center'){$e = 'div'; return 'text-align: center;';}
 	if($e == 'dir' or $e == 'menu'){$e = 'ul'; return '';}
@@ -849,7 +849,7 @@ function hl_tag2(&$e, &$a, $t=1){
 	static $fs = array('0'=>'xx-small', '1'=>'xx-small', '2'=>'small', '3'=>'medium', '4'=>'large', '5'=>'x-large', '6'=>'xx-large', '7'=>'300%', '-1'=>'smaller', '-2'=>'60%', '+1'=>'larger', '+2'=>'150%', '+3'=>'200%', '+4'=>'300%');
 	if($e == 'font'){
 	 $a2 = '';
-	 if(preg_match('`face\s*=\s*(\'|")([^=]+?)\\1`i', $a, $m) or preg_match('`face\s*=\s*([^"])(\S+)`i', $a, $m)){
+	 if(preg_match('`face\s*=\s*(\'|")([^=]+?)\\1`i', $a, $m) or preg_match('`face\s*=(\s*)(\S+)`i', $a, $m)){ 
 		$a2 .= ' font-family: '. str_replace('"', '\'', trim($m[2])). ';';
 	 }
 	 if(preg_match('`color\s*=\s*(\'|")?(.+?)(\\1|\s|$)`i', $a, $m)){
