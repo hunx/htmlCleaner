@@ -488,9 +488,48 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 		'tr' => 1,
 		'ul' => 1
 	);
+	$parentChild = array(
+		'colgroup' => array('col' => 1), 
+		'dir' => array('li' => 1), 
+		'dl' => array(
+			'dd' => 1, 
+			'dt' => 1
+		), 
+		'menu' => array('li' => 1), 
+		'ol' => array('li' => 1), 
+		'optgroup' => array('option' => 1), 
+		'option' => array('#pcdata' => 1), 
+		'rbc' => array('rb' => 1), 
+		'rp' => array('#pcdata' => 1), 
+		'rtc' => array('rt' => 1), 
+		'ruby' => array('rb' => 1, 
+		'rbc' => 1, 
+		'rp' => 1, 
+		'rt' => 1, 
+		'rtc' => 1), 
+		'select' => array(
+			'optgroup' => 1,
+			'option' => 1
+		), 
+		'script' => array('#pcdata' => 1), 
+		'table' => array(
+			'caption' => 1, 
+			'col' => 1, 
+			'colgroup' => 1, 
+			'tfoot' => 1, 
+			'tbody' => 1, 
+			'tr' => 1, 
+			'thead' => 1
+		), 
+		'tbody' => array('tr' => 1), 
+		'tfoot' => array('tr' => 1), 
+		'textarea' => array('#pcdata' => 1), 
+		'thead' => array('tr' => 1), 
+		'tr' => array('td' => 1, 'th' => 1), 
+		'ul' => array('li' => 1)
+	); // Specific - immediate parent-child
 	// Specific - immediate parent-child
 	if ($GLOBALS['config']['direct_list_nest']) {
-		$parentChild['ol'] = $parentChild['ul'] += array('ol' => 1, 'ul' => 1);
 	}
 	$other = array(
 		'address' => array('p' => 1), 
