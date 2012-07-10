@@ -358,10 +358,6 @@ function hl_attrval ($attrValue, $spec) {
 function hl_bal($html, $keepBad = 1, $parent = 'div') {
 	// balance tags
 	// by content
-
-	/**
-	 * @todo Figure out what to name the rest of these arrays
-	 */
 	$block = array(
 		'blockquote' => 1,
 		'form' => 1,
@@ -492,49 +488,10 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 		'tr' => 1,
 		'ul' => 1
 	);
-
-	$parentChild = array(
-		'colgroup' => array('col' => 1), 
-		'dir' => array('li' => 1), 
-		'dl' => array('dd' => 1, 
-		'dt' => 1), 
-		'menu' => array('li' => 1), 
-		'ol' => array('li' => 1), 
-		'optgroup' => array('option' => 1), 
-		'option' => array('#pcdata' => 1), 
-		'rbc' => array('rb' => 1), 
-		'rp' => array('#pcdata' => 1), 
-		'rtc' => array('rt' => 1), 
-		'ruby' => array('rb' => 1, 
-		'rbc' => 1, 
-		'rp' => 1, 
-		'rt' => 1, 
-		'rtc' => 1), 
-		'select' => array(
-			'optgroup' => 1,
-			'option' => 1
-		), 
-		'script' => array('#pcdata' => 1), 
-		'table' => array(
-			'caption' => 1, 
-			'col' => 1, 
-			'colgroup' => 1, 
-			'tfoot' => 1, 
-			'tbody' => 1, 
-			'tr' => 1, 
-			'thead' => 1
-		), 
-		'tbody' => array('tr' => 1), 
-		'tfoot' => array('tr' => 1), 
-		'textarea' => array('#pcdata' => 1), 
-		'thead' => array('tr' => 1), 
-		'tr' => array('td' => 1, 'th' => 1), 
-		'ul' => array('li' => 1)
-	); // Specific - immediate parent-child
+	// Specific - immediate parent-child
 	if ($GLOBALS['config']['direct_list_nest']) {
 		$parentChild['ol'] = $parentChild['ul'] += array('ol' => 1, 'ul' => 1);
 	}
-
 	$other = array(
 		'address' => array('p' => 1), 
 		'applet' => array('param' => 1), 
@@ -549,7 +506,8 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 		)
 	); // Other
 
-	$omitClose = array('colgroup' => 1,
+	$omitClose = array(
+		'colgroup' => 1,
 		'dd' => 1,
 		'dt' => 1,
 		'li' => 1,
@@ -563,7 +521,8 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 	); // Omitable closing
 
 	// block/inline type; ins & del both type; #pcdata: text
-	$eB = array('address' => 1,
+	$eB = array(
+		'address' => 1,
 		'blockquote' => 1,
 		'center' => 1,
 		'del' => 1,
@@ -590,7 +549,8 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 		'ul' => 1
 	);
 
-	$eI = array('#pcdata' => 1,
+	$eI = array(
+		'#pcdata' => 1,
 		'a' => 1,
 		'abbr' => 1,
 		'acronym' => 1,
@@ -634,7 +594,8 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 		'var' => 1
 	);
 	
-	$eN = array('a' => 1,
+	$eN = array(
+		'a' => 1,
 		'big' => 1,
 		'button' => 1,
 		'fieldset' => 1,
@@ -654,7 +615,8 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 		'textarea' => 1
 	); // Exclude from specific ele; $illegal values
 
-	$eO = array('area' => 1,
+	$eO = array(
+		'area' => 1,
 		'caption' => 1,
 		'col' => 1,
 		'colgroup' => 1,
@@ -679,11 +641,10 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 		'tr' => 1
 	); // Missing in $eB & $eI
 	$eF = $eB + $eI;
-
 	// $parent sets allowed child
-	$parent = ((isset($eF[$parent]) && $parent != '#pcdata') or isset($eO[$parent])) ? $parent : 'div';
+	$parent = ((isset($eF[$parent]) && $parent != '#pcdata') || isset($eO[$parent])) ? $parent : 'div';
 	if (isset($empty[$parent])) {
-		return (!$keepBad ? '' : str_replace(array('<', '>'), array('&lt;', '&gt;'), $html));
+		return (!$keepBad ? '' : str_replace(array('<', '>'), array('<', '>'), $html));
 	}
 	if (isset($parentChild[$parent])) {
 		$parentOk = $parentChild[$parent];
@@ -698,19 +659,18 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 		$parentOk = $eB;
 		unset($inline['del'], $inline['ins']);
 	}
-
 	if (isset($other[$parent])) {
 		$parentOk = $parentOk + $other[$parent];
 	}
 	if (isset($illegal[$parent])) {
 		$parentOk = array_diff_assoc($parentOk, $illegal[$parent]);
 	}
-
 	$html = explode('<', $html);
-	$ok = $q = array(); // $q seq list of open non-empty ele
-	ob_start();
+	$ok = $q = array();
 
-	for ($i =- 1, $ci = count($html); ++$i < $ci;) {
+	// $q seq list of open non-empty ele
+	$output = "";
+	for ($i=-1, $ci=count($html); ++$i<$ci;) {
 		// allowed $ok in parent $p
 		if ($ql = count($q)) {
 			$p = array_pop($q);
@@ -728,7 +688,6 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 				$ok = $eB;
 				unset($inline['del'], $inline['ins']);
 			}
-
 			if (isset($other[$p])) {
 				$ok = $ok + $other[$p];
 			}
@@ -739,20 +698,19 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 			$ok = $parentOk;
 			unset($inline['del'], $inline['ins']);
 		}
-
 		// bad tags, & ele content
-		if(isset($e) && ($keepBad == 1 or (isset($ok['#pcdata']) && ($keepBad == 3 or $keepBad == 5)))) {
-			echo '&lt;', $s, $e, $a, '&gt;';
+		if (isset($e) && ($keepBad == 1 || (isset($ok['#pcdata']) && ($keepBad == 3 || $keepBad == 5)))) {
+			$output .= '<' . $s . $e . $a . '>';
 		}
 		if (isset($x[0])) {
-			if ($keepBad < 3 or isset($ok['#pcdata'])) {
-				echo $x;
+			if ($keepBad < 3 || isset($ok['#pcdata'])) {
+				$output .= $x;
 			} elseif (strpos($x, "\x02\x04")) {
 				foreach (preg_split('`(\x01\x02[^\x01\x02]+\x02\x01)`', $x, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $v) {
-					echo (substr($v, 0, 2) == "\x01\x02" ? $v : ($keepBad > 4 ? preg_replace('`\S`', '', $v) : ''));
+					$output .= (substr($v, 0, 2) == "\x01\x02" ? $v : ($keepBad > 4 ? preg_replace('`\S`', '', $v) : ''));
 				}
 			} elseif ($keepBad > 4) {
-				echo preg_replace('`\S`', '', $x);
+				$output .= preg_replace('`\S`', '', $x);
 			}
 		}
 		// get markup
@@ -760,29 +718,34 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 			$x = $html[$i];
 			continue;
 		}
-		$s = $e = $a = $x = null;
+		$s = null;
+		$e = null;
+		$a = null;
+		$x = null;
 		list($all, $s, $e, $a, $x) = $r;
-		
 		// close tag
 		if ($s) {
-			if (isset($empty[$e]) or !in_array($e, $q)) {
+			if (isset($empty[$e]) || !in_array($e, $q)) {
 				continue;
-			} // Empty/unopen
+			}
+			// Empty/unopen
 			if ($p == $e) {
-				array_pop($q); 
-				echo '</', $e, '>';
+				array_pop($q);
+				$output .= '</' . $e . '>';
 				unset($e);
 				continue;
-			} // Last open
-			$add = ''; // Nesting - close open tags that need to be
-			for ($j =- 1, $cj = count($q); ++$j < $cj;) {
+			}
+			// Last open
+			$add = '';
+			// Nesting - close open tags that need to be
+			for($j=-1, $cj=count($q); ++$j<$cj;) {
 				if (($d = array_pop($q)) == $e) {
 					break;
 				} else {
 					$add .= "</{$d}>";
 				}
 			}
-			echo $add, '</', $e, '>';
+			$output .=  $add . '</' . $e . '>';
 			unset($e);
 			continue;
 		}
@@ -790,7 +753,7 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 		// $block ele needs $eB ele as child
 		if (isset($block[$e]) && strlen(trim($x))) {
 			$html[$i] = "{$e}{$a}>";
-			array_splice($html, $i + 1, 0, 'div>' . $x);
+			array_splice($html, $i+1, 0, 'div>'. $x);
 			unset($e, $x);
 			++$ci;
 			--$i;
@@ -804,31 +767,35 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 			continue;
 		}
 		// if no open ele, $parent = parent; mostly immediate parent-child relation should hold
-		if (!$ql or !isset($eN[$e]) || !array_intersect($q, $illegal2)) {
+		if (!$ql || !isset($eN[$e]) || !array_intersect($q, $illegal2)) {
 			if (!isset($ok[$e])) {
 				if ($ql && isset($omitClose[$p])) {
-					echo '</', array_pop($q), '>';
+					$output .= '</' . array_pop($q) . '>';
 					unset($e, $x);
 					--$i;
 				}
 				continue;
 			}
 			if (!isset($empty[$e])) {
-				$q[] = $element;
+				$q[] = $e;
 			}
-			echo '<', $e, $a, '>'; unset($e); continue;
+			$output .= '<' . $e . $a . '>';
+			unset($e);
+			continue;
 		}
 		// specific parent-child
 		if (isset($parentChild[$p][$e])) {
 			if (!isset($empty[$e])) {
-				$q[] = $element;
+				$q[] = $e;
 			}
-			echo '<', $e, $a, '>'; unset($e); continue;
+			$output .= '<' . $e . $a . '>';
+			unset($e);
+			continue;
 		}
 		// nesting
 		$add = '';
 		$q2 = array();
-		for ($k =- 1, $kc = count($q); ++$k<$kc;) {
+		for ($k=-1, $kc=count($q); ++$k<$kc;) {
 			$d = $q[$k];
 			$ok2 = array();
 			if (isset($parentChild[$d])) {
@@ -851,18 +818,18 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 					$add = "</{$q[$k]}>{$add}";
 				}
 				break;
-			} else {
+			} else{
 				$q2[] = $d;
 			}
 		}
-
 		$q = $q2;
 		if (!isset($empty[$e])) {
-			$q[] = $element;
+			$q[] = $e;
 		}
-		echo $add, '<', $e, $a, '>'; unset($e); continue;
+		$output .= $add . '<' . $e . $a . '>';
+		unset($e);
+		continue;
 	}
-
 	// end
 	if ($ql = count($q)) {
 		$p = array_pop($q);
@@ -880,7 +847,6 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 			$ok = $eB;
 			unset($inline['del'], $inline['ins']);
 		}
-	
 		if (isset($other[$p])) {
 			$ok = $ok + $other[$p];
 		}
@@ -891,29 +857,26 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 		$ok = $parentOk;
 		unset($inline['del'], $inline['ins']);
 	}
-	if (isset($e) && ($keepBad == 1 || (isset($ok['#pcdata']) && ($keepBad == 3 or $keepBad == 5)))) {
-		echo '&lt;', $s, $e, $a, '&gt;';
+	if (isset($e) && ($keepBad == 1 || (isset($ok['#pcdata']) && ($keepBad == 3 || $keepBad == 5)))) {
+		$output .= '<' . $s . $e . $a . '>';
 	}
 	if (isset($x[0])) {
-		if(strlen(trim($x)) && (($ql && isset($block[$p])) || (isset($block[$parent]) && !$ql))) {
-			echo '<div>', $x, '</div>';
+		if (strlen(trim($x)) && (($ql && isset($block[$p])) || (isset($block[$parent]) && !$ql))) {
+			$output .= '<div>' . $x . '</div>';
 		} elseif ($keepBad < 3 || isset($ok['#pcdata'])) {
-			echo $x;
+			$output .= $x;
 		} elseif (strpos($x, "\x02\x04")) {
 			foreach (preg_split('`(\x01\x02[^\x01\x02]+\x02\x01)`', $x, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $v) {
-				echo (substr($v, 0, 2) == "\x01\x02" ? $v : ($keepBad > 4 ? preg_replace('`\S`', '', $v) : ''));
+				$output .= (substr($v, 0, 2) == "\x01\x02" ? $v : ($keepBad > 4 ? preg_replace('`\S`', '', $v) : ''));
 			}
-		} elseif($keepBad > 4) {
-			echo preg_replace('`\S`', '', $x);
+		} elseif ($keepBad > 4) {
+			$output .= preg_replace('`\S`', '', $x);
 		}
 	}
 	while (!empty($q) && ($e = array_pop($q))) {
-		echo '</', $e, '>';
+		$output .= '</' . $e . '>';
 	}
-	$o = ob_get_contents();
-	ob_end_clean();
-	return $o;
-	// eof
+	return $output;
 }
 
 function hl_cmtcd($html) {
@@ -955,7 +918,8 @@ function hl_ent($html) {
 	);
 	//See http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
 	//Character entities
-	static $characters = array('fnof' => '402',
+	static $characters = array(
+		'fnof' => '402',
 		'Alpha' => '913',
 		'Beta' => '914',
 		'Gamma' => '915',
@@ -1389,7 +1353,8 @@ function hl_tag($tag) {
 	}
 
 	// close tag
-	static $unclosedTags = array('area' => 1,
+	static $unclosedTags = array(
+		'area' => 1,
 		'br' => 1,
 		'col' => 1,
 		'embed' => 1,
