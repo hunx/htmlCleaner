@@ -1407,23 +1407,728 @@ function hl_tag($tag) {
 	/**
 	 * @todo Figure out what to name the rest of these arrays
 	 */
-	static $aN = array('abbr'=>array('td'=>1, 'th'=>1), 'accept-charset'=>array('form'=>1), 'accept'=>array('form'=>1, 'input'=>1), 'accesskey'=>array('a'=>1, 'area'=>1, 'button'=>1, 'input'=>1, 'label'=>1, 'legend'=>1, 'textarea'=>1), 'action'=>array('form'=>1), 'align'=>array('caption'=>1, 'embed'=>1, 'applet'=>1, 'iframe'=>1, 'img'=>1, 'input'=>1, 'object'=>1, 'legend'=>1, 'table'=>1, 'hr'=>1, 'div'=>1, 'h1'=>1, 'h2'=>1, 'h3'=>1, 'h4'=>1, 'h5'=>1, 'h6'=>1, 'p'=>1, 'col'=>1, 'colgroup'=>1, 'tbody'=>1, 'td'=>1, 'tfoot'=>1, 'th'=>1, 'thead'=>1, 'tr'=>1), 'alt'=>array('applet'=>1, 'area'=>1, 'img'=>1, 'input'=>1), 'archive'=>array('applet'=>1, 'object'=>1), 'axis'=>array('td'=>1, 'th'=>1), 'bgcolor'=>array('embed'=>1, 'table'=>1, 'tr'=>1, 'td'=>1, 'th'=>1), 'border'=>array('table'=>1, 'img'=>1, 'object'=>1), 'bordercolor'=>array('table'=>1, 'td'=>1, 'tr'=>1), 'cellpadding'=>array('table'=>1), 'cellspacing'=>array('table'=>1), 'char'=>array('col'=>1, 'colgroup'=>1, 'tbody'=>1, 'td'=>1, 'tfoot'=>1, 'th'=>1, 'thead'=>1, 'tr'=>1), 'charoff'=>array('col'=>1, 'colgroup'=>1, 'tbody'=>1, 'td'=>1, 'tfoot'=>1, 'th'=>1, 'thead'=>1, 'tr'=>1), 'charset'=>array('a'=>1, 'script'=>1), 'checked'=>array('input'=>1), 'cite'=>array('blockquote'=>1, 'q'=>1, 'del'=>1, 'ins'=>1), 'classid'=>array('object'=>1), 'clear'=>array('br'=>1), 'code'=>array('applet'=>1), 'codebase'=>array('object'=>1, 'applet'=>1), 'codetype'=>array('object'=>1), 'color'=>array('font'=>1), 'cols'=>array('textarea'=>1), 'colspan'=>array('td'=>1, 'th'=>1), 'compact'=>array('dir'=>1, 'dl'=>1, 'menu'=>1, 'ol'=>1, 'ul'=>1), 'coords'=>array('area'=>1, 'a'=>1), 'data'=>array('object'=>1), 'datetime'=>array('del'=>1, 'ins'=>1), 'declare'=>array('object'=>1), 'defer'=>array('script'=>1), 'dir'=>array('bdo'=>1), 'disabled'=>array('button'=>1, 'input'=>1, 'optgroup'=>1, 'option'=>1, 'select'=>1, 'textarea'=>1), 'enctype'=>array('form'=>1), 'face'=>array('font'=>1), 'flashvars'=>array('embed'=>1), 'for'=>array('label'=>1), 'frame'=>array('table'=>1), 'frameborder'=>array('iframe'=>1), 'headers'=>array('td'=>1, 'th'=>1), 'height'=>array('embed'=>1, 'iframe'=>1, 'td'=>1, 'th'=>1, 'img'=>1, 'object'=>1, 'applet'=>1), 'href'=>array('a'=>1, 'area'=>1), 'hreflang'=>array('a'=>1), 'hspace'=>array('applet'=>1, 'img'=>1, 'object'=>1), 'ismap'=>array('img'=>1, 'input'=>1), 'label'=>array('option'=>1, 'optgroup'=>1), 'language'=>array('script'=>1), 'longdesc'=>array('img'=>1, 'iframe'=>1), 'marginheight'=>array('iframe'=>1), 'marginwidth'=>array('iframe'=>1), 'maxlength'=>array('input'=>1), 'method'=>array('form'=>1), 'model'=>array('embed'=>1), 'multiple'=>array('select'=>1), 'name'=>array('button'=>1, 'embed'=>1, 'textarea'=>1, 'applet'=>1, 'select'=>1, 'form'=>1, 'iframe'=>1, 'img'=>1, 'a'=>1, 'input'=>1, 'object'=>1, 'map'=>1, 'param'=>1), 'nohref'=>array('area'=>1), 'noshade'=>array('hr'=>1), 'nowrap'=>array('td'=>1, 'th'=>1), 'object'=>array('applet'=>1), 'onblur'=>array('a'=>1, 'area'=>1, 'button'=>1, 'input'=>1, 'label'=>1, 'select'=>1, 'textarea'=>1), 'onchange'=>array('input'=>1, 'select'=>1, 'textarea'=>1), 'onfocus'=>array('a'=>1, 'area'=>1, 'button'=>1, 'input'=>1, 'label'=>1, 'select'=>1, 'textarea'=>1), 'onreset'=>array('form'=>1), 'onselect'=>array('input'=>1, 'textarea'=>1), 'onsubmit'=>array('form'=>1), 'pluginspage'=>array('embed'=>1), 'pluginurl'=>array('embed'=>1), 'prompt'=>array('isindex'=>1), 'readonly'=>array('textarea'=>1, 'input'=>1), 'rel'=>array('a'=>1), 'rev'=>array('a'=>1), 'rows'=>array('textarea'=>1), 'rowspan'=>array('td'=>1, 'th'=>1), 'rules'=>array('table'=>1), 'scope'=>array('td'=>1, 'th'=>1), 'scrolling'=>array('iframe'=>1), 'selected'=>array('option'=>1), 'shape'=>array('area'=>1, 'a'=>1), 'size'=>array('hr'=>1, 'font'=>1, 'input'=>1, 'select'=>1), 'span'=>array('col'=>1, 'colgroup'=>1), 'src'=>array('embed'=>1, 'script'=>1, 'input'=>1, 'iframe'=>1, 'img'=>1), 'standby'=>array('object'=>1), 'start'=>array('ol'=>1), 'summary'=>array('table'=>1), 'tabindex'=>array('a'=>1, 'area'=>1, 'button'=>1, 'input'=>1, 'object'=>1, 'select'=>1, 'textarea'=>1), 'target'=>array('a'=>1, 'area'=>1, 'form'=>1), 'type'=>array('a'=>1, 'embed'=>1, 'object'=>1, 'param'=>1, 'script'=>1, 'input'=>1, 'li'=>1, 'ol'=>1, 'ul'=>1, 'button'=>1), 'usemap'=>array('img'=>1, 'input'=>1, 'object'=>1), 'valign'=>array('col'=>1, 'colgroup'=>1, 'tbody'=>1, 'td'=>1, 'tfoot'=>1, 'th'=>1, 'thead'=>1, 'tr'=>1), 'value'=>array('input'=>1, 'option'=>1, 'param'=>1, 'button'=>1, 'li'=>1), 'valuetype'=>array('param'=>1), 'vspace'=>array('applet'=>1, 'img'=>1, 'object'=>1), 'width'=>array('embed'=>1, 'hr'=>1, 'iframe'=>1, 'img'=>1, 'object'=>1, 'table'=>1, 'td'=>1, 'th'=>1, 'applet'=>1, 'col'=>1, 'colgroup'=>1, 'pre'=>1), 'wmode'=>array('embed'=>1), 'xml:space'=>array('pre'=>1, 'script'=>1, 'style'=>1)); // Ele-specific
-	static $aNE = array('checked'=>1, 'compact'=>1, 'declare'=>1, 'defer'=>1, 'disabled'=>1, 'ismap'=>1, 'multiple'=>1, 'nohref'=>1, 'noresize'=>1, 'noshade'=>1, 'nowrap'=>1, 'readonly'=>1, 'selected'=>1); // Empty
-	static $aNP = array('action'=>1, 'cite'=>1, 'classid'=>1, 'codebase'=>1, 'data'=>1, 'href'=>1, 'longdesc'=>1, 'model'=>1, 'pluginspage'=>1, 'pluginurl'=>1, 'usemap'=>1); // Need scheme check; excludes style, on* & src
-	static $aNU = array('class'=>array('param'=>1, 'script'=>1), 'dir'=>array('applet'=>1, 'bdo'=>1, 'br'=>1, 'iframe'=>1, 'param'=>1, 'script'=>1), 'id'=>array('script'=>1), 'lang'=>array('applet'=>1, 'br'=>1, 'iframe'=>1, 'param'=>1, 'script'=>1), 'xml:lang'=>array('applet'=>1, 'br'=>1, 'iframe'=>1, 'param'=>1, 'script'=>1), 'onclick'=>array('applet'=>1, 'bdo'=>1, 'br'=>1, 'font'=>1, 'iframe'=>1, 'isindex'=>1, 'param'=>1, 'script'=>1), 'ondblclick'=>array('applet'=>1, 'bdo'=>1, 'br'=>1, 'font'=>1, 'iframe'=>1, 'isindex'=>1, 'param'=>1, 'script'=>1), 'onkeydown'=>array('applet'=>1, 'bdo'=>1, 'br'=>1, 'font'=>1, 'iframe'=>1, 'isindex'=>1, 'param'=>1, 'script'=>1), 'onkeypress'=>array('applet'=>1, 'bdo'=>1, 'br'=>1, 'font'=>1, 'iframe'=>1, 'isindex'=>1, 'param'=>1, 'script'=>1), 'onkeyup'=>array('applet'=>1, 'bdo'=>1, 'br'=>1, 'font'=>1, 'iframe'=>1, 'isindex'=>1, 'param'=>1, 'script'=>1), 'onmousedown'=>array('applet'=>1, 'bdo'=>1, 'br'=>1, 'font'=>1, 'iframe'=>1, 'isindex'=>1, 'param'=>1, 'script'=>1), 'onmousemove'=>array('applet'=>1, 'bdo'=>1, 'br'=>1, 'font'=>1, 'iframe'=>1, 'isindex'=>1, 'param'=>1, 'script'=>1), 'onmouseout'=>array('applet'=>1, 'bdo'=>1, 'br'=>1, 'font'=>1, 'iframe'=>1, 'isindex'=>1, 'param'=>1, 'script'=>1), 'onmouseover'=>array('applet'=>1, 'bdo'=>1, 'br'=>1, 'font'=>1, 'iframe'=>1, 'isindex'=>1, 'param'=>1, 'script'=>1), 'onmouseup'=>array('applet'=>1, 'bdo'=>1, 'br'=>1, 'font'=>1, 'iframe'=>1, 'isindex'=>1, 'param'=>1, 'script'=>1), 'style'=>array('param'=>1, 'script'=>1), 'title'=>array('param'=>1, 'script'=>1)); // Univ & exceptions
+	static $aN = array(
+		'abbr' => array(
+			'td' => 1,
+			'th' => 1
+		),
+		'accept-charset' => array('form' => 1),
+		'accept' => array(
+			'form' => 1,
+			'input' => 1
+		),
+		'accesskey' => array(
+			'a' => 1,
+			'area' => 1,
+			'button' => 1,
+			'input' => 1,
+			'label' => 1,
+			'legend' => 1,
+			'textarea' => 1
+		),
+		'action' => array('form' => 1),
+		'align' => array(
+			'caption' => 1,
+			'embed' => 1,
+			'applet' => 1,
+			'iframe' => 1,
+			'img' => 1,
+			'input' => 1,
+			'object' => 1,
+			'legend' => 1,
+			'table' => 1,
+			'hr' => 1,
+			'div' => 1,
+			'h1' => 1,
+			'h2' => 1,
+			'h3' => 1,
+			'h4' => 1,
+			'h5' => 1,
+			'h6' => 1,
+			'p' => 1,
+			'col' => 1,
+			'colgroup' => 1,
+			'tbody' => 1,
+			'td' => 1,
+			'tfoot' => 1,
+			'th' => 1,
+			'thead' => 1,
+			'tr' => 1
+		),
+		'alt' => array(
+			'applet' => 1,
+			'area' => 1,
+			'img' => 1,
+			'input' => 1
+		),
+		'archive' => array(
+			'applet' => 1,
+			'object' => 1
+		),
+		'axis' => array(
+			'td' => 1,
+			'th' => 1
+		),
+		'bgcolor' => array(
+			'embed' => 1,
+			'table' => 1,
+			'tr' => 1,
+			'td' => 1,
+			'th' => 1
+		),
+		'border' => array(
+			'table' => 1,
+			'img' => 1,
+			'object' => 1
+		),
+		'bordercolor' => array(
+			'table' => 1,
+			'td' => 1,
+			'tr' => 1
+		),
+		'cellpadding' => array('table' => 1),
+		'cellspacing' => array('table' => 1),
+		'char' => array(
+			'col' => 1,
+			'colgroup' => 1,
+			'tbody' => 1,
+			'td' => 1,
+			'tfoot' => 1,
+			'th' => 1,
+			'thead' => 1,
+			'tr' => 1
+		),
+		'charoff' => array(
+			'col' => 1,
+			'colgroup' => 1,
+			'tbody' => 1,
+			'td' => 1,
+			'tfoot' => 1,
+			'th' => 1,
+			'thead' => 1,
+			'tr' => 1
+		),
+		'charset' => array(
+			'a' => 1,
+			'script' => 1
+		),
+		'checked' => array('input' => 1),
+		'cite' => array(
+			'blockquote' => 1,
+			'q' => 1,
+			'del' => 1,
+			'ins' => 1
+		),
+		'classid' => array('object' => 1),
+		'clear' => array('br' => 1),
+		'code' => array('applet' => 1),
+		'codebase' => array(
+			'object' => 1,
+			'applet' => 1
+		),
+		'codetype' => array('object' => 1),
+		'color' => array('font' => 1),
+		'cols' => array('textarea' => 1),
+		'colspan' => array(
+			'td' => 1,
+			'th' => 1
+		),
+		'compact' => array(
+			'dir' => 1,
+			'dl' => 1,
+			'menu' => 1,
+			'ol' => 1,
+			'ul' => 1
+		),
+		'coords' => array(
+			'area' => 1,
+			'a' => 1
+		),
+		'data' => array('object' => 1),
+		'datetime' => array(
+			'del' => 1,
+			'ins' => 1
+		),
+		'declare' => array('object' => 1),
+		'defer' => array('script' => 1),
+		'dir' => array('bdo' => 1),
+		'disabled' => array(
+			'button' => 1,
+			'input' => 1,
+			'optgroup' => 1,
+			'option' => 1,
+			'select' => 1,
+			'textarea' => 1
+		),
+		'enctype' => array('form' => 1),
+		'face' => array('font' => 1),
+		'flashvars' => array('embed' => 1),
+		'for' => array('label' => 1),
+		'frame' => array('table' => 1),
+		'frameborder' => array('iframe' => 1),
+		'headers' => array(
+			'td' => 1,
+			'th' => 1
+		),
+		'height' => array(
+			'embed' => 1,
+			'iframe' => 1,
+			'td' => 1,
+			'th' => 1,
+			'img' => 1,
+			'object' => 1,
+			'applet' => 1
+		),
+		'href' => array(
+			'a' => 1,
+			'area' => 1
+		),
+		'hreflang' => array('a' => 1),
+		'hspace' => array(
+			'applet' => 1,
+			'img' => 1,
+			'object' => 1
+		),
+		'ismap' => array(
+			'img' => 1,
+			'input' => 1
+		),
+		'label' => array(
+			'option' => 1,
+			'optgroup' => 1
+		),
+		'language' => array('script' => 1),
+		'longdesc' => array(
+			'img' => 1,
+			'iframe' => 1
+		),
+		'marginheight' => array('iframe' => 1),
+		'marginwidth' => array('iframe' => 1),
+		'maxlength' => array('input' => 1),
+		'method' => array('form' => 1),
+		'model' => array('embed' => 1),
+		'multiple' => array('select' => 1),
+		'name' => array(
+			'button' => 1,
+			'embed' => 1,
+			'textarea' => 1,
+			'applet' => 1,
+			'select' => 1,
+			'form' => 1,
+			'iframe' => 1,
+			'img' => 1,
+			'a' => 1,
+			'input' => 1,
+			'object' => 1,
+			'map' => 1,
+			'param' => 1
+		),
+		'nohref' => array('area' => 1),
+		'noshade' => array('hr' => 1),
+		'nowrap' => array(
+			'td' => 1,
+			'th' => 1
+		),
+		'object' => array('applet' => 1),
+		'onblur' => array(
+			'a' => 1,
+			'area' => 1,
+			'button' => 1,
+			'input' => 1,
+			'label' => 1,
+			'select' => 1,
+			'textarea' => 1
+		),
+		'onchange' => array(
+			'input' => 1,
+			'select' => 1,
+			'textarea' => 1
+		),
+		'onfocus' => array(
+			'a' => 1,
+			'area' => 1,
+			'button' => 1,
+			'input' => 1,
+			'label' => 1,
+			'select' => 1,
+			'textarea' => 1
+		),
+		'onreset' => array('form' => 1),
+		'onselect' => array(
+			'input' => 1,
+			'textarea' => 1
+		),
+		'onsubmit' => array('form' => 1),
+		'pluginspage' => array('embed' => 1),
+		'pluginurl' => array('embed' => 1),
+		'prompt' => array('isindex' => 1),
+		'readonly' => array(
+			'textarea' => 1,
+			'input' => 1
+		),
+		'rel' => array('a' => 1),
+		'rev' => array('a' => 1),
+		'rows' => array('textarea' => 1),
+		'rowspan' => array(
+			'td' => 1,
+			'th' => 1
+		),
+		'rules' => array('table' => 1),
+		'scope' => array(
+			'td' => 1,
+			'th' => 1
+		),
+		'scrolling' => array('iframe' => 1),
+		'selected' => array('option' => 1),
+		'shape' => array(
+			'area' => 1,
+			'a' => 1
+		),
+		'size' => array(
+			'hr' => 1,
+			'font' => 1,
+			'input' => 1,
+			'select' => 1
+		),
+		'span' => array(
+			'col' => 1,
+			'colgroup' => 1
+		),
+		'src' => array(
+			'embed' => 1,
+			'script' => 1,
+			'input' => 1,
+			'iframe' => 1,
+			'img' => 1
+		),
+		'standby' => array('object' => 1),
+		'start' => array('ol' => 1),
+		'summary' => array('table' => 1),
+		'tabindex' => array(
+			'a' => 1,
+			'area' => 1,
+			'button' => 1,
+			'input' => 1,
+			'object' => 1,
+			'select' => 1,
+			'textarea' => 1
+		),
+		'target' => array(
+			'a' => 1,
+			'area' => 1,
+			'form' => 1
+		),
+		'type' => array(
+			'a' => 1,
+			'embed' => 1,
+			'object' => 1,
+			'param' => 1,
+			'script' => 1,
+			'input' => 1,
+			'li' => 1,
+			'ol' => 1,
+			'ul' => 1,
+			'button' => 1
+		),
+		'usemap' => array(
+			'img' => 1,
+			'input' => 1,
+			'object' => 1
+		),
+		'valign' => array(
+			'col' => 1,
+			'colgroup' => 1,
+			'tbody' => 1,
+			'td' => 1,
+			'tfoot' => 1,
+			'th' => 1,
+			'thead' => 1,
+			'tr' => 1
+		),
+		'value' => array(
+			'input' => 1,
+			'option' => 1,
+			'param' => 1,
+			'button' => 1,
+			'li' => 1
+		),
+		'valuetype' => array('param' => 1),
+		'vspace' => array(
+			'applet' => 1,
+			'img' => 1,
+			'object' => 1
+		),
+		'width' => array(
+			'embed' => 1,
+			'hr' => 1,
+			'iframe' => 1,
+			'img' => 1,
+			'object' => 1,
+			'table' => 1,
+			'td' => 1,
+			'th' => 1,
+			'applet' => 1,
+			'col' => 1,
+			'colgroup' => 1,
+			'pre' => 1
+		),
+		'wmode' => array('embed' => 1),
+		'xml:space' => array(
+			'pre' => 1,
+			'script' => 1,
+			'style' => 1
+		)
+	); // Ele-specific
+
+	static $aNE = array('checked' => 1,
+		'compact' => 1,
+		'declare' => 1,
+		'defer' => 1,
+		'disabled' => 1,
+		'ismap' => 1,
+		'multiple' => 1,
+		'nohref' => 1,
+		'noresize' => 1,
+		'noshade' => 1,
+		'nowrap' => 1,
+		'readonly' => 1,
+		'selected' => 1
+	); // Empty
+	
+	static $aNP = array('action' => 1,
+		'cite' => 1,
+		'classid' => 1,
+		'codebase' => 1,
+		'data' => 1,
+		'href' => 1,
+		'longdesc' => 1,
+		'model' => 1,
+		'pluginspage' => 1,
+		'pluginurl' => 1,
+		'usemap' => 1
+	); // Need scheme check; excludes style, on* & src
+	
+	static $aNU = array(
+		'class' => array(
+			'param' => 1,
+			'script' => 1
+		), 
+		'dir' => array(
+			'applet' => 1,
+			'bdo' => 1,
+			'br' => 1,
+			'iframe' => 1,
+			'param' => 1,
+			'script' => 1
+		),
+		'id' => array('script' => 1), 
+		'lang' => array(
+			'applet' => 1,
+			'br' => 1,
+			'iframe' => 1,
+			'param' => 1,
+			'script' => 1
+		), 
+		'xml:lang' => array(
+			'applet' => 1,
+			'br' => 1,
+			'iframe' => 1,
+			'param' => 1,
+			'script' => 1
+		), 
+		'onclick' => array(
+			'applet' => 1,
+			'bdo' => 1,
+			'br' => 1,
+			'font' => 1,
+			'iframe' => 1,
+			'isindex' => 1,
+			'param' => 1,
+			'script' => 1
+		), 
+		'ondblclick' => array(
+			'applet' => 1,
+			'bdo' => 1,
+			'br' => 1,
+			'font' => 1,
+			'iframe' => 1,
+			'isindex' => 1,
+			'param' => 1,
+			'script' => 1
+		), 
+		'onkeydown' => array(
+			'applet' => 1,
+			'bdo' => 1,
+			'br' => 1,
+			'font' => 1,
+			'iframe' => 1,
+			'isindex' => 1,
+			'param' => 1,
+			'script' => 1
+		),
+		'onkeypress' => array(
+			'applet' => 1,
+			'bdo' => 1,
+			'br' => 1,
+			'font' => 1,
+			'iframe' => 1,
+			'isindex' => 1,
+			'param' => 1,
+			'script' => 1
+		),
+		'onkeyup' => array(
+			'applet' => 1,
+			'bdo' => 1,
+			'br' => 1,
+			'font' => 1,
+			'iframe' => 1,
+			'isindex' => 1,
+			'param' => 1,
+			'script' => 1
+		),
+		'onmousedown' => array(
+			'applet' => 1,
+			'bdo' => 1,
+			'br' => 1,
+			'font' => 1,
+			'iframe' => 1,
+			'isindex' => 1,
+			'param' => 1,
+			'script' => 1
+		),
+		'onmousemove' => array(
+			'applet' => 1,
+			'bdo' => 1,
+			'br' => 1,
+			'font' => 1,
+			'iframe' => 1,
+			'isindex' => 1,
+			'param' => 1,
+			'script' => 1
+		),
+		'onmouseout' => array(
+			'applet' => 1,
+			'bdo' => 1,
+			'br' => 1,
+			'font' => 1,
+			'iframe' => 1,
+			'isindex' => 1,
+			'param' => 1,
+			'script' => 1
+		),
+		'onmouseover' => array(
+			'applet' => 1,
+			'bdo' => 1,
+			'br' => 1,
+			'font' => 1,
+			'iframe' => 1,
+			'isindex' => 1,
+			'param' => 1,
+			'script' => 1
+		),
+		'onmouseup' => array(
+			'applet' => 1,
+			'bdo' => 1,
+			'br' => 1,
+			'font' => 1,
+			'iframe' => 1,
+			'isindex' => 1,
+			'param' => 1,
+			'script' => 1
+		),
+		'style' => array(
+			'param' => 1,
+			'script' => 1
+		),
+		'title' => array(
+			'param' => 1,
+			'script' => 1
+		),
+	); // Univ & exceptions
 
 	if ($config['lc_std_val']) {
 		// predef attr vals for $eAL & $aNE ele
-		static $aNL = array('all'=>1, 'baseline'=>1, 'bottom'=>1, 'button'=>1, 'center'=>1, 'char'=>1, 'checkbox'=>1, 'circle'=>1, 'col'=>1, 'colgroup'=>1, 'cols'=>1, 'data'=>1, 'default'=>1, 'file'=>1, 'get'=>1, 'groups'=>1, 'hidden'=>1, 'image'=>1, 'justify'=>1, 'left'=>1, 'ltr'=>1, 'middle'=>1, 'none'=>1, 'object'=>1, 'password'=>1, 'poly'=>1, 'post'=>1, 'preserve'=>1, 'radio'=>1, 'rect'=>1, 'ref'=>1, 'reset'=>1, 'right'=>1, 'row'=>1, 'rowgroup'=>1, 'rows'=>1, 'rtl'=>1, 'submit'=>1, 'text'=>1, 'top'=>1);
-		static $eAL = array('a'=>1, 'area'=>1, 'bdo'=>1, 'button'=>1, 'col'=>1, 'form'=>1, 'img'=>1, 'input'=>1, 'object'=>1, 'optgroup'=>1, 'option'=>1, 'param'=>1, 'script'=>1, 'select'=>1, 'table'=>1, 'td'=>1, 'tfoot'=>1, 'th'=>1, 'thead'=>1, 'tr'=>1, 'xml:space'=>1);
+		static $aNL = array(
+			'all' => 1,
+			'baseline' => 1,
+			'bottom' => 1,
+			'button' => 1,
+			'center' => 1,
+			'char' => 1,
+			'checkbox' => 1,
+			'circle' => 1,
+			'col' => 1,
+			'colgroup' => 1,
+			'cols' => 1,
+			'data' => 1,
+			'default' => 1,
+			'file' => 1,
+			'get' => 1,
+			'groups' => 1,
+			'hidden' => 1,
+			'image' => 1,
+			'justify' => 1,
+			'left' => 1,
+			'ltr' => 1,
+			'middle' => 1,
+			'none' => 1,
+			'object' => 1,
+			'password' => 1,
+			'poly' => 1,
+			'post' => 1,
+			'preserve' => 1,
+			'radio' => 1,
+			'rect' => 1,
+			'ref' => 1,
+			'reset' => 1,
+			'right' => 1,
+			'row' => 1,
+			'rowgroup' => 1,
+			'rows' => 1,
+			'rtl' => 1,
+			'submit' => 1,
+			'text' => 1,
+			'top' => 1
+		);
+		static $eAL = array(
+			'a' => 1,
+			'area' => 1,
+			'bdo' => 1,
+			'button' => 1,
+			'col' => 1,
+			'form' => 1,
+			'img' => 1,
+			'input' => 1,
+			'object' => 1,
+			'optgroup' => 1,
+			'option' => 1,
+			'param' => 1,
+			'script' => 1,
+			'select' => 1,
+			'table' => 1,
+			'td' => 1,
+			'tfoot' => 1,
+			'th' => 1,
+			'thead' => 1,
+			'tr' => 1,
+			'xml:space' => 1
+		);
 		$lcase = isset($eAL[$e]) ? 1 : 0;
 	}
 
 	$depTr = 0;
 	if ($config['no_deprecated_attr']) {
 		// dep attr:applicable ele
-		static $aND = array('align'=>array('caption'=>1, 'div'=>1, 'h1'=>1, 'h2'=>1, 'h3'=>1, 'h4'=>1, 'h5'=>1, 'h6'=>1, 'hr'=>1, 'img'=>1, 'input'=>1, 'legend'=>1, 'object'=>1, 'p'=>1, 'table'=>1), 'bgcolor'=>array('table'=>1, 'td'=>1, 'th'=>1, 'tr'=>1), 'border'=>array('img'=>1, 'object'=>1), 'bordercolor'=>array('table'=>1, 'td'=>1, 'tr'=>1), 'clear'=>array('br'=>1), 'compact'=>array('dl'=>1, 'ol'=>1, 'ul'=>1), 'height'=>array('td'=>1, 'th'=>1), 'hspace'=>array('img'=>1, 'object'=>1), 'language'=>array('script'=>1), 'name'=>array('a'=>1, 'form'=>1, 'iframe'=>1, 'img'=>1, 'map'=>1), 'noshade'=>array('hr'=>1), 'nowrap'=>array('td'=>1, 'th'=>1), 'size'=>array('hr'=>1), 'start'=>array('ol'=>1), 'type'=>array('li'=>1, 'ol'=>1, 'ul'=>1), 'value'=>array('li'=>1), 'vspace'=>array('img'=>1, 'object'=>1), 'width'=>array('hr'=>1, 'pre'=>1, 'td'=>1, 'th'=>1));
-		static $eAD = array('a'=>1, 'br'=>1, 'caption'=>1, 'div'=>1, 'dl'=>1, 'form'=>1, 'h1'=>1, 'h2'=>1, 'h3'=>1, 'h4'=>1, 'h5'=>1, 'h6'=>1, 'hr'=>1, 'iframe'=>1, 'img'=>1, 'input'=>1, 'legend'=>1, 'li'=>1, 'map'=>1, 'object'=>1, 'ol'=>1, 'p'=>1, 'pre'=>1, 'script'=>1, 'table'=>1, 'td'=>1, 'th'=>1, 'tr'=>1, 'ul'=>1);
+		static $aND = array(
+			'align' => array(
+				'caption' => 1,
+				'div' => 1,
+				'h1' => 1,
+				'h2' => 1,
+				'h3' => 1,
+				'h4' => 1,
+				'h5' => 1,
+				'h6' => 1,
+				'hr' => 1,
+				'img' => 1,
+				'input' => 1,
+				'legend' => 1,
+				'object' => 1,
+				'p' => 1,
+				'table' => 1
+			),
+			'bgcolor' => array(
+				'table' => 1,
+				'td' => 1,
+				'th' => 1,
+				'tr' => 1
+			),
+			'border' => array(
+				'img' => 1,
+				'object' => 1
+			),
+			'bordercolor' => array(
+				'table' => 1, 
+				'td' => 1, 
+				'tr' => 1
+			), 
+			'clear' => array('br' => 1),
+			'compact' => array(
+				'dl' => 1, 
+				'ol' => 1, 
+				'ul' => 1
+			), 
+			'height' => array(
+				'td' => 1, 
+				'th' => 1
+			), 
+			'hspace' => array(
+				'img' => 1, 
+				'object' => 1
+			), 
+			'language' => array('script' => 1), 
+			'name' => array(
+				'a' => 1, 
+				'form' => 1, 
+				'iframe' => 1, 
+				'img' => 1, 
+				'map' => 1
+			), 
+			'noshade' => array('hr' => 1), 
+			'nowrap' => array(
+				'td' => 1, 
+				'th' => 1
+			), 
+			'size' => array('hr' => 1), 
+			'start' => array('ol' => 1), 
+			'type' => array(
+				'li' => 1, 
+				'ol' => 1, 
+				'ul' => 1
+			), 
+			'value' => array('li' => 1), 
+			'vspace' => array(
+				'img' => 1, 
+				'object' => 1
+			), 
+			'width' => array(
+				'hr' => 1, 
+				'pre' => 1, 
+				'td' => 1, 
+				'th' => 1
+			)
+		);
+		static $eAD = array(
+			'a' => 1,
+			'br' => 1,
+			'caption' => 1,
+			'div' => 1,
+			'dl' => 1,
+			'form' => 1,
+			'h1' => 1,
+			'h2' => 1,
+			'h3' => 1,
+			'h4' => 1,
+			'h5' => 1,
+			'h6' => 1,
+			'hr' => 1,
+			'iframe' => 1,
+			'img' => 1,
+			'input' => 1,
+			'legend' => 1,
+			'li' => 1,
+			'map' => 1,
+			'object' => 1,
+			'ol' => 1,
+			'p' => 1,
+			'pre' => 1,
+			'script' => 1,
+			'table' => 1,
+			'td' => 1,
+			'th' => 1,
+			'tr' => 1,
+			'ul' => 1
+		);
 		$depTr = isset($eAD[$e]) ? 1 : 0;
 	}
 
@@ -1553,7 +2258,23 @@ function hl_tag($tag) {
 	}
 
 	// rqd attr
-	static $eAR = array('area'=>array('alt'=>'area'), 'bdo'=>array('dir'=>'ltr'), 'form'=>array('action'=>''), 'img'=>array('src'=>'', 'alt'=>'image'), 'map'=>array('name'=>''), 'optgroup'=>array('label'=>''), 'param'=>array('name'=>''), 'script'=>array('type'=>'text/javascript'), 'textarea'=>array('rows'=>'10', 'cols'=>'50'));
+	static $eAR = array(
+		'area'=>array('alt'=>'area'),
+		'bdo'=>array('dir'=>'ltr'), 
+		'form'=>array('action'=>''), 
+		'img'=>array(
+			'src'=>'', 
+			'alt'=>'image'
+		), 
+		'map'=>array('name'=>''), 
+		'optgroup'=>array('label'=>''), 
+		'param'=>array('name'=>''), 
+		'script'=>array('type'=>'text/javascript'), 
+		'textarea'=>array(
+			'rows'=>'10', 
+			'cols'=>'50'
+		)
+	);
 	if (isset($eAR[$element])) {
 		foreach ($eAR[$element] as $key =>$value) {
 			if (!isset($attr[$key])) {
@@ -1745,9 +2466,60 @@ function hl_tidy ($html, $tidy, $parent) {
 	 */
 	$n = preg_match('`[ts]([1-9])`', $parent, $match) ? $match[1] : 0;
 	$a = array('br'=>1);
-	$b = array('button'=>1, 'input'=>1, 'option'=>1);
-	$c = array('caption'=>1, 'dd'=>1, 'dt'=>1, 'h1'=>1, 'h2'=>1, 'h3'=>1, 'h4'=>1, 'h5'=>1, 'h6'=>1, 'isindex'=>1, 'label'=>1, 'legend'=>1, 'li'=>1, 'object'=>1, 'p'=>1, 'pre'=>1, 'td'=>1, 'textarea'=>1, 'th'=>1);
-	$d = array('address'=>1, 'blockquote'=>1, 'center'=>1, 'colgroup'=>1, 'dir'=>1, 'div'=>1, 'dl'=>1, 'fieldset'=>1, 'form'=>1, 'hr'=>1, 'iframe'=>1, 'map'=>1, 'menu'=>1, 'noscript'=>1, 'ol'=>1, 'optgroup'=>1, 'rbc'=>1, 'rtc'=>1, 'ruby'=>1, 'script'=>1, 'select'=>1, 'table'=>1, 'tfoot'=>1, 'thead'=>1, 'tr'=>1, 'ul'=>1);
+	$b = array(
+		'button'=>1, 
+		'input'=>1, 
+		'option'=>1
+	);
+	$c = array(
+		'caption' => 1,
+		'dd' => 1,
+		'dt' => 1,
+		'h1' => 1,
+		'h2' => 1,
+		'h3' => 1,
+		'h4' => 1,
+		'h5' => 1,
+		'h6' => 1,
+		'isindex' => 1,
+		'label' => 1,
+		'legend' => 1,
+		'li' => 1,
+		'object' => 1,
+		'p' => 1,
+		'pre' => 1,
+		'td' => 1,
+		'textarea' => 1,
+		'th' => 1
+	);
+	$d = array(
+		'address' => 1,
+		'blockquote' => 1,
+		'center' => 1,
+		'colgroup' => 1,
+		'dir' => 1,
+		'div' => 1,
+		'dl' => 1,
+		'fieldset' => 1,
+		'form' => 1,
+		'hr' => 1,
+		'iframe' => 1,
+		'map' => 1,
+		'menu' => 1,
+		'noscript' => 1,
+		'ol' => 1,
+		'optgroup' => 1,
+		'rbc' => 1,
+		'rtc' => 1,
+		'ruby' => 1,
+		'script' => 1,
+		'select' => 1,
+		'table' => 1,
+		'tfoot' => 1,
+		'thead' => 1,
+		'tr' => 1,
+		'ul' => 1
+	);
 	
 	ob_start();
 	if (isset($d[$parent])) {
