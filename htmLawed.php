@@ -2453,7 +2453,7 @@ function hl_tag2 (&$tag, &$attributes, $t=1) {
 	// eof
 }
 //function hl_tidy ($t, $w, $p) {
-function hl_tidy ($html, $tidy, $parent) {
+function hl_tidy($html, $tidy, $parent) {
 	// Tidy/compact HTM
 	if (strpos(' pre,script,textarea', "$parent,")) {
 		return $html;
