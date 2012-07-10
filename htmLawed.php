@@ -530,6 +530,7 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 	); // Specific - immediate parent-child
 	// Specific - immediate parent-child
 	if ($GLOBALS['config']['direct_list_nest']) {
+		$parentChild['ol'] = $parentChild['ul'] += array('ol' => 1, 'ul' => 1);
 	}
 	$other = array(
 		'address' => array('p' => 1), 
