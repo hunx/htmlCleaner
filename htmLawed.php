@@ -1,9 +1,9 @@
 <?php
 
 /*
-htmLawed 1.1.11, 5 June 2012
+htmLawed 1.1.12, 5 July 2012
 Copyright Santosh Patnaik
-Dual licensed with LGPL 3 and GPL 2 or later
+Dual licensed with LGPL 3 and GPL 2+
 A PHP Labware internal utility; www.bioinformatics.org/phplabware/internal_utilities/htmLawed
 
 See htmLawed_README.txt/htm
@@ -758,10 +758,7 @@ function hl_bal($html, $keepBad = 1, $parent = 'div') {
 			$x = $html[$i];
 			continue;
 		}
-		$s = null;
-		$e = null;
-		$a = null;
-		$x = null;
+		$s = $e = $a = $x = null;
 		list($all, $s, $e, $a, $x) = $r;
 		// close tag
 		if ($s) {
@@ -1297,19 +1294,31 @@ function hl_prot($attrValue, $attrName = null) {
 	// eof
 }
 
-function hl_regex($p){
+function hl_regex($pattern) {
 	// ?regex
-	if(empty($p)){return 0;}
-	if($t = ini_get('track_errors')){$o = isset($php_errormsg) ? $php_errormsg : null;}
-	else{ini_set('track_errors', 1);}
+	if (empty($pattern)) {
+		return 0;
+	}
+	if ($track = ini_get('track_errors')) {
+		$error = isset($php_errormsg) ? $php_errormsg : null;
+	} else {
+		ini_set('track_errors', 1);
+	}
 	unset($php_errormsg);
-	if(($d = ini_get('display_errors'))){ini_set('display_errors', 0);}
-	preg_match($p, '');
-	if($d){ini_set('display_errors', 1);}
-	$r = isset($php_errormsg) ? 0 : 1;
-	if($t){$php_errormsg = isset($o) ? $o : null;}
-	else{ini_set('track_errors', 0);}
-	return $r;
+	if (($display = ini_get('display_errors'))) {
+		ini_set('display_errors', 0);
+	}
+	preg_match($pattern, '');
+	if ($display) {
+		ini_set('display_errors', 1);
+	}
+	$return = isset($php_errormsg) ? 0 : 1;
+	if ($track) {
+		$php_errormsg = isset($error) ? $error : null;
+	} else {
+		ini_set('track_errors', 0);
+	}
+	return $return;
 	// eof
 }
 
@@ -1785,7 +1794,8 @@ function hl_tag($tag) {
 		)
 	); // Ele-specific
 
-	static $aNE = array('checked' => 1,
+	static $aNE = array(
+		'checked' => 1,
 		'compact' => 1,
 		'declare' => 1,
 		'defer' => 1,
@@ -1800,7 +1810,8 @@ function hl_tag($tag) {
 		'selected' => 1
 	); // Empty
 	
-	static $aNP = array('action' => 1,
+	static $aNP = array(
+		'action' => 1,
 		'cite' => 1,
 		'classid' => 1,
 		'codebase' => 1,
@@ -2458,23 +2469,21 @@ function hl_tidy($html, $tidy, $parent) {
 	if (strpos(' pre,script,textarea', "$parent,")) {
 		return $html;
 	}
-
-	$html = str_replace(' </', '</', preg_replace(array('`(<\w[^>]*(?<!/)>)\s+`', '`\s+`', '`(<\w[^>]*(?<!/)>) `'), array(' $1', ' ', '$1'), preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'), create_function('$m', 'return $m[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $m[3]). $m[4];'), $html)));
+	$html = str_replace(' </', '</', preg_replace(array('`(<\w[^>]*(?<!/)>)\s+`', '`\s+`', '`(<\w[^>]*(?<!/)>) `'), array(' $1', ' ', '$1'), preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'), create_function('$match', 'return $match[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $match[3]). $match[4];'), $html)));
 	if (($tidy = strtolower($tidy)) == -1) {
 		return str_replace(array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), array('<', '>', "\n", "\r", "\t", ' '), $html);
 	}
-	
 	$string = strpos(" $tidy", 't') ? "\t" : ' ';
-	$string = preg_match('`\d`', $parent, $match) ? str_repeat($string, $match[0]) : str_repeat($string, ($string == "\t" ? 1 : 2));
+	$string = preg_match('`\d`', $tidy, $match) ? str_repeat($string, $match[0]) : str_repeat($string, ($string == "\t" ? 1 : 2));
 	/**
 	 * @todo figure out what to rename $n, $a, $b, $c, $d
 	 */
-	$n = preg_match('`[ts]([1-9])`', $parent, $match) ? $match[1] : 0;
-	$a = array('br'=>1);
+	$n = preg_match('`[ts]([1-9])`', $tidy, $match) ? $match[1] : 0;
+	$a = array('br' => 1);
 	$b = array(
-		'button'=>1, 
-		'input'=>1, 
-		'option'=>1
+		'button' => 1,
+		'input' => 1,
+		'option' => 1,
 	);
 	$c = array(
 		'caption' => 1,
@@ -2495,7 +2504,7 @@ function hl_tidy($html, $tidy, $parent) {
 		'pre' => 1,
 		'td' => 1,
 		'textarea' => 1,
-		'th' => 1
+		'th' => 1,
 	);
 	$d = array(
 		'address' => 1,
@@ -2523,51 +2532,48 @@ function hl_tidy($html, $tidy, $parent) {
 		'tfoot' => 1,
 		'thead' => 1,
 		'tr' => 1,
-		'ul' => 1
+		'ul' => 1,
 	);
-	
-	ob_start();
+	$output = '';
 	if (isset($d[$parent])) {
-		echo str_repeat($string, ++$n);
+		$output .= str_repeat($string, ++$n);
 	}
 	$html = explode('<', $html);
-	echo ltrim(array_shift($html));
-	for ($i=-1, $j = count($html); ++$i < $j;) {
+	$output .= ltrim(array_shift($html));
+	for ($i=-1, $j=count($html); ++$i<$j;) {
 		$r = '';
 		list($e, $r) = explode('>', $html[$i]);
 		$x = $e[0] == '/' ? 0 : (substr($e, -1) == '/' ? 1 : ($e[0] != '!' ? 2 : -1));
 		$y = !$x ? ltrim($e, '/') : ($x > 0 ? substr($e, 0, strcspn($e, ' ')) : 0);
-		$e = "<$e>"; 
+		$e = "<$e>";
 		if (isset($d[$y])) {
 			if (!$x) {
-				echo "\n", str_repeat($string, --$n), "$e\n", str_repeat($string, $n);
+				$output .= "\n" . str_repeat($string, --$n) . "$e\n" . str_repeat($string, $n);
 			} else {
-				echo "\n", str_repeat($string, $n), "$e\n", str_repeat($string, ($x != 1 ? ++$n : $n));
+				$output .= "\n" . str_repeat($string, $n) . "$e\n" . str_repeat($string, ($x != 1 ? ++$n : $n));
 			}
-			echo ltrim($r);
+			$output .= ltrim($r);
 			continue;
 		}
 		$f = "\n" . str_repeat($string, $n);
 		if (isset($c[$y])) {
 			if (!$x) {
-				echo $e, $f, ltrim($r);
+				$output .= $e . $f . ltrim($r);
 			} else {
-				echo $f, $e, $r;
+				$output .= $f . $e . $r;
 			}
 		} elseif (isset($b[$y])) {
-			echo $f, $e, $r;
+			$output .= $f . $e . $r;
 		} elseif (isset($a[$y])) {
-			echo $e, $f, ltrim($r);
+			$output .= $e . $f . ltrim($r);
 		} elseif (!$y) {
-			echo $f, $e, $f, ltrim($r);
+			$output .= $f . $e . $f . ltrim($r);
 		} else {
-			echo $e, $r;
+			$output .= $e . $r;
 		}
 	}
-
-	$html = preg_replace('`[\n]\s*?[\n]+`', "\n", ob_get_contents());
-	ob_end_clean();
-
+	$html = preg_replace('`[\n]\s*?[\n]+`', "\n", $output);
+	unset($output);
 	if (($l = strpos(" $tidy", 'r') ? (strpos(" $tidy", 'n') ? "\r\n" : "\r") : 0)) {
 		$html = str_replace("\n", $l, $html);
 	}
