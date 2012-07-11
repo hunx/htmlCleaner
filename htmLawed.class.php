@@ -1445,22 +1445,36 @@ class htmLawed {
 			return '&gt;';
 		}
 
-		if (!preg_match('`^<(/?)([a-zA-Z][a-zA-Z1-6]*)([^>]*?)\s?>$`m', $tag, $breakdown)) {
+		/* if (!preg_match('`^<(/?)([a-zA-Z][a-zA-Z1-6]*)([^>]*?)\s?>$`m', $tag, $breakdown)) { */
+			//Uncommented version will match <? tags in the code
+		if (!preg_match('`^<([/?\?])([a-zA-Z][a-zA-Z1-6]*)([^>]*?)\s?>$`m', $tag, $breakdown)) {
 			return str_replace(array('<', '>'), array('&lt;', '&gt;'), $tag);
 		} elseif (!isset($this->config['elements'][($element = strtolower($breakdown[2]))])) {
-			return (($this->config['keep_bad']%2) ? str_replace(array('<', '>'), array('&lt;', '&gt;'), $tag) : '');
+			return (($this->config['keep_bad'] % 2) ? str_replace(array('<', '>'), array('&lt;', '&gt;'), $tag) : '');
 		}
 
 		//$breakdown:
 		//[0] = Full tag
-		//[1] = /, if it exists, empty if it doesn't.
+		//[1] = / or ?, if it exists, empty if it doesn't.
 		//[2] = tag
 		//[3] = attributes
 		//Clean up the attribute string
 		$attr = str_replace(array("\n", "\r", "\t"), ' ', trim($breakdown[3]));
 
 		// tag transform
-		static $deprecatedTags = array('applet'=>1, 'center'=>1, 'dir'=>1, 'embed'=>1, 'font'=>1, 'isindex'=>1, 'menu'=>1, 's'=>1, 'strike'=>1, 'u'=>1); // Deprecated
+		static $deprecatedTags = array(
+			'applet' => 1,
+			'center' => 1,
+			'dir' => 1,
+			'embed' => 1,
+			'font' => 1,
+			'isindex' => 1,
+			'menu' => 1,
+			's' => 1,
+			'strike' => 1,
+			'u' => 1,
+			'xml' => 1,		//Used to remove <?xml tags from the code
+		); // Deprecated
 		if ($this->config['make_tag_strict'] && isset($deprecatedTags[$element])) {
 			$transformedTag = $this->hl_tag2($element, $attr, $this->config['make_tag_strict']);
 			if(!$element) {
@@ -1469,7 +1483,17 @@ class htmLawed {
 		}
 
 		// close tag
-		static $unclosedTags = array('area'=>1, 'br'=>1, 'col'=>1, 'embed'=>1, 'hr'=>1, 'img'=>1, 'input'=>1, 'isindex'=>1, 'param'=>1); // Empty ele
+		static $unclosedTags = array(
+			'area' => 1,
+			'br' => 1,
+			'col' => 1,
+			'embed' => 1,
+			'hr' => 1,
+			'img' => 1,
+			'input' => 1,
+			'isindex' => 1,
+			'param' => 1
+		); // Empty ele
 		if (!empty($breakdown[1])) {
 			return (!isset($unclosedTags[$element]) ? (empty($this->config['hook_tag']) ? "</$element>" : $this->config['hook_tag']($element)) : (($this->config['keep_bad'])%2 ? str_replace(array('<', '>'), array('&lt;', '&gt;'), $tag) : ''));
 		}
