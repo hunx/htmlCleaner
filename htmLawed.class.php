@@ -107,7 +107,8 @@ class htmLawed {
 			$this->config['make_tag_strict'] = isset($this->config['make_tag_strict']) ? $this->config['make_tag_strict'] : 2;
 			$this->config['xml:lang'] = isset($this->config['xml:lang']) ? $this->config['xml:lang'] : 2;
 		}
-		// config eles
+		
+		//List of valid, recognized HTML tags
 		$element = array(
 			'a' => 1,
 			'abbr' => 1,
@@ -1447,7 +1448,7 @@ class htmLawed {
 
 		/*if (!preg_match('`^<(/?)([a-zA-Z][a-zA-Z1-6]*)([^>]*?)\s?>$`m', $tag, $breakdown)) {*/
 			//Uncommented version will match <? tags in the code
-		if (!preg_match('`^<(/?)([a-zA-Z\?\!][a-zA-Z1-6]*)([^>]*?)\s?>$`m', $tag, $breakdown)) {
+		if (!preg_match('`^<([/\?\!]?)([a-zA-Z][a-zA-Z1-6]*)([^>]*?)\s?>$`m', $tag, $breakdown)) {
 			return str_replace(array('<', '>'), array('&lt;', '&gt;'), $tag);
 		} elseif (!isset($this->config['elements'][($element = strtolower($breakdown[2]))])) {
 			return (($this->config['keep_bad'] % 2) ? str_replace(array('<', '>'), array('&lt;', '&gt;'), $tag) : '');
