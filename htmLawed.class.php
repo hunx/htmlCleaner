@@ -46,7 +46,7 @@ class htmLawed {
 			'clean_ms_char' => 2,
 			'comment' => 1,
 			'css_expression' => 0,
-			'deny_attribute' => array('title, id, style, on*'),
+			'deny_attribute' => array('title', 'id', 'style', 'on*'),
 			//'keep_attributes' => array('href'),
 			'direct_list_nest' => 1,
 			//'elements' => ,
@@ -495,7 +495,7 @@ class htmLawed {
 			's' => 1,
 			'samp' => 1,
 			'small' => 1,
-			'span' => 1,
+			//'span' => 1,
 			'strike' => 1,
 			'strong' => 1,
 			'sub' => 1,
@@ -533,7 +533,8 @@ class htmLawed {
 				'sup' => 1
 			),
 			'rb' => array('ruby' => 1),
-			'rt' => array('ruby' => 1)
+			'rt' => array('ruby' => 1),
+			'span' => array('span' => 1),
 		); // Illegal
 		$illegalKeys = array_keys($illegalElements);
 
@@ -696,7 +697,7 @@ class htmLawed {
 			'select' => 1,
 			'script' => 1,
 			'small' => 1,
-			'span' => 1,
+			//'span' => 1,
 			'strike' => 1,
 			'strong' => 1,
 			'sub' => 1,
@@ -1901,10 +1902,10 @@ class htmLawed {
 			'usemap' => 1
 		); // Need scheme check; excludes style, on* & src
 		static $aNU = array(
-			'class' => array(
+			/*'class' => array(
 				'param' => 1,
 				'script' => 1
-			), 
+			), */
 			'dir' => array(
 				'applet' => 1,
 				'bdo' => 1,
@@ -2352,11 +2353,11 @@ class htmLawed {
 						);
 						$value = strtr($value, $sC);
 					}
-					$value = preg_replace_callback('`(url(?:\()(?: )*(?:\'|"|&(?:quot|apos);)?)(.+?)((?:\'|"|&(?:quot|apos);)?(?: )*(?:\)))`iS', 'hl_prot', $value);
+					$value = preg_replace_callback('`(url(?:\()(?: )*(?:\'|"|&(?:quot|apos);)?)(.+?)((?:\'|"|&(?:quot|apos);)?(?: )*(?:\)))`iS', array(get_class($this), 'hl_prot'), $value);
 						$value = !$this->config['css_expression'] ? preg_replace('`expression`i', ' ', preg_replace('`\\\\\S|(/|(%2f))(\*|(%2a))`i', ' ', $value)) : $value;
 				} elseif (isset($aNP[$key]) || strpos($key, 'src') !== false || $key[0] == 'o') {
 					$value = str_replace("\xad", ' ', (strpos($value, '&') !== false ? str_replace(array('&#xad;', '&#173;', '&shy;'), ' ', $value) : $value));
-					$value = hl_prot($value, $key);
+					$value = $this->hl_prot($value, $key);
 					if ($key == 'href') { // X-spam
 						if ($this->config['anti_mail_spam'] && strpos($value, 'mailto:') === 0) {
 							$value = str_replace('@', htmlspecialchars($this->config['anti_mail_spam']), $value);
@@ -2541,7 +2542,7 @@ class htmLawed {
 			$tag = 'ul';
 			return '';
 		}
-		if ($tag == 's' || $tag == 'strike') {
+		/*if ($tag == 's' || $tag == 'strike') {
 			$tag = 'span';
 			return 'text-decoration: line-through;';
 		}
@@ -2578,7 +2579,7 @@ class htmLawed {
 			}
 			$tag = 'span';
 			return ltrim($attr);
-		}
+		}*/
 		if ($t == 2) {
 			$tag = 0;
 			return 0;
@@ -2595,7 +2596,20 @@ class htmLawed {
 		if (strpos(' pre,script,textarea', "$parent,")) {
 			return $html;
 		}
-		$html = str_replace(' </', '</', preg_replace(array('`(<\w[^>]*(?<!/)>)\s+`', '`\s+`', '`(<\w[^>]*(?<!/)>) `'), array(' $1', ' ', '$1'), preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'), create_function('$match', 'return $match[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $match[3]). $match[4];'), $html)));
+		$html = str_replace(' </', '</', 
+			//item's 2, 3, and 4 get rid of spaces/tabs, line-breaks followed by spaces, and then excessive line-breaks. in that order.
+			//items 1 and 5 select items.
+			preg_replace(array('`(<\w[^>]*(?<!/)>)\s+`', '`[ \t]+`', '`[\n\r] ?+`', '`[\n\r][\n\r]+`', '`(<\w[^>]*(?<!/)>) `'), array(' $1', ' ', "\n", "\n\n", '$1'), 
+				preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'), 
+					create_function('$match', 'return $match[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $match[3]). $match[4];'), 
+					$html
+				)
+			)
+		);
+
+		echo "<pre>";
+		print_r(htmlentities($html));
+		echo "</pre>";die;
 		if (($tidy = strtolower($tidy)) == -1) {
 			return str_replace(array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), array('<', '>', "\n", "\r", "\t", ' '), $html);
 		}
