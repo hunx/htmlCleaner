@@ -2597,9 +2597,9 @@ class htmLawed {
 			return $html;
 		}
 		$html = str_replace(' </', '</', 
-			//item's 2, 3, and 4 get rid of spaces/tabs, line-breaks followed by spaces, and then excessive line-breaks. in that order.
-			//items 1 and 5 select items.
-			preg_replace(array('`(<\w[^>]*(?<!/)>)\s+`', '`[ \t]+`', '`[\n\r] ?+`', '`[\n\r][\n\r]+`', '`(<\w[^>]*(?<!/)>) `'), array(' $1', ' ', "\n", "\n\n", '$1'), 
+			//item's 2 and 3 get rid of spaces/tabs and then excessive line-breaks. in that order.
+			//items 1 and 4 select items.
+			preg_replace(array('`(<\w[^>]*(?<!/)>)\s+`', '`[ \t]+`', '`[\n\r][\n\r]+`', '`(<\w[^>]*(?<!/)>) `'), array(' $1', ' ', "\n\n", '$1'), 
 				preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'), 
 					create_function('$match', 'return $match[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $match[3]). $match[4];'), 
 					$html
@@ -2607,9 +2607,6 @@ class htmLawed {
 			)
 		);
 
-		echo "<pre>";
-		print_r(htmlentities($html));
-		echo "</pre>";die;
 		if (($tidy = strtolower($tidy)) == -1) {
 			return str_replace(array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), array('<', '>', "\n", "\r", "\t", ' '), $html);
 		}
