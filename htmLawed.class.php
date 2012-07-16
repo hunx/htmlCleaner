@@ -1,8 +1,9 @@
 <?php
-/*
- * Eric's attempat at organizing the class, going a different route than Lisa
- * and we'll performance test when we're both done.
+
+/**
+ * @package utility
  */
+
 class htmLawed {
 	/*
 	htmLawed 1.1.12, 5 July 2012
