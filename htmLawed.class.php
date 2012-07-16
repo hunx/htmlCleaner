@@ -331,8 +331,6 @@ class htmLawed {
 				'time' => microtime(),
 			);
 		}
-		//global $C;
-		//$C = $this->config;
 
 		// main
 		//Select all the HTML tags in the supplied code
@@ -340,7 +338,14 @@ class htmLawed {
 		$html = $this->config['balance'] ? $this->hl_bal($html, $this->config['keep_bad'], $this->config['parent']) : $html;
 		$html = (($this->config['cdata'] || $this->config['comment']) && strpos($html, "\x01") !== false) ? str_replace(array("\x01", "\x02", "\x03", "\x04", "\x05"), array('', '', '&', '<', '>'), $html) : $html;
 		$html = $this->config['tidy'] ? $this->hl_tidy($html, $this->config['tidy'], $this->config['parent']) : $html;
-		return $html;
+
+		/**
+		 * @internal see http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/htmLawed_README.htm#s3.2 
+		 * to explain why we do this string replace.
+		 */
+		$html = str_replace("\x06", '&', $html);
+
+		return htmlspecialchars($html);
 		// eof
 	}
 
