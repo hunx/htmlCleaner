@@ -421,8 +421,9 @@ class htmLawed {
 		return ($output ? $attrValue : (isset($spec['default']) ? $spec['default'] : 0));
 		// eof
 	}
-	 /**
-	*
+	
+	/**
+	 *
 	 */
 	private function hl_bal($html, $keepBad = 1, $container = 'div') {
 		// balance tags
