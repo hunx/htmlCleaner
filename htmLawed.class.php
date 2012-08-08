@@ -6,14 +6,14 @@
 
 class htmLawed {
 	/*
-	htmLawed 1.1.12, 5 July 2012
+	htmLawed 1.1.14, 8 August 2012
 	Copyright Santosh Patnaik
 	Dual licensed with LGPL 3 and GPL 2+
 	A PHP Labware internal utility; www.bioinformatics.org/phplabware/internal_utilities/htmLawed
 	See htmLawed_README.txt/htm
 	*/
 
-	private $version = '1.1.12';
+	private $version = '1.1.14';
 	private $hl_Ids;
 	private $html;
 	private $config;
@@ -826,7 +826,9 @@ class htmLawed {
 				$output .= '<' . $s . $e . $a . '>';
 			}
 			if (isset($x[0])) {
-				if ($keepBad < 3 || isset($ok['#pcdata'])) {
+				if (strlen(trim($x)) && (($ql && isset($blockLevelElements[$p])) || (isset($blockLevelElements[$container]) && !$ql))) {
+					$output .= '<div>' . $x . '</div>';
+				} elseif ($keepBad < 3 || isset($ok['#pcdata'])) {
 					$output .= $x;
 				} elseif (strpos($x, "\x02\x04")) {
 					foreach (preg_split('`(\x01\x02[^\x01\x02]+\x02\x01)`', $x, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $v) {
@@ -837,7 +839,7 @@ class htmLawed {
 				}
 			}
 			// get markup
-			if (!preg_match('`^(/?)([a-zA-Z1-6]+)([^>]*)>(.*)`sm', $html[$i], $r)) {
+			if (!preg_match('`^(/?)([a-z1-6]+)([^>]*)>(.*)`sm', $html[$i], $r))
 				$x = $html[$i];
 				continue;
 			}
@@ -2292,7 +2294,7 @@ class htmLawed {
 		$nfr = 0;
 
 		foreach ($attributes as $key => $value) {
-			if (((isset($this->config['deny_attribute']['*']) ? isset($this->config['deny_attribute'][$key]) : !isset($this->config['deny_attribute'][$key])) || isset($rl[$key])) && ((!isset($rl['n'][$key]) && !isset($rl['n']['*'])) || isset($rl[$key])) && (isset($aN[$key][$element]) || (isset($aNU[$key]) && !isset($aNU[$key][$element])))) {
+			if (((isset($this->config['deny_attribute']['*']) ? isset($this->config['deny_attribute'][$key]) : !isset($this->config['deny_attribute'][$key])) && (isset($aN[$key][$element]) or (isset($aNU[$key]) && !isset($aNU[$key][$element]))) && !isset($rl['n'][$key]) && !isset($rl['n']['*'])) or isset($rl[$key])) {
 				if (isset($aNE[$key])) {
 					$value = $key;
 				} elseif (!empty($lcase) && (($element != 'button' || $element != 'input') || $key == 'type')) { // Rather loose but ?not cause issues
@@ -2611,6 +2613,7 @@ class htmLawed {
 	/**
 	 *
 	 */
+	//private function hl_tidy($t, $w, $p){
 	private function hl_tidy($html, $tidy, $parent) {
 		// Tidy/compact HTM
 		if (strpos(' pre,script,textarea', "$parent,")) {
@@ -2632,7 +2635,7 @@ class htmLawed {
 		}
 		$string = strpos(" $tidy", 't') ? "\t" : ' ';
 		$string = preg_match('`\d`', $tidy, $match) ? str_repeat($string, $match[0]) : str_repeat($string, ($string == "\t" ? 1 : 2));
-		$n = preg_match('`[ts]([1-9])`', $tidy, $match) ? $match[1] : 0;
+		$N = preg_match('`[ts]([1-9])`', $tidy, $match) ? $match[1] : 0;
 		$a = array('br' => 1);
 		$b = array(
 			'button' => 1,
@@ -2689,42 +2692,53 @@ class htmLawed {
 			'ul' => 1,
 		);
 		$output = '';
-		if (isset($d[$parent])) {
-			$output .= str_repeat($string, ++$n);
-		}
-		$html = explode('<', $html);
-		$output .= ltrim(array_shift($html));
-		for ($i=-1, $j=count($html); ++$i<$j;) {
-			$r = '';
-			list($e, $r) = explode('>', $html[$i]);
-			$x = $e[0] == '/' ? 0 : (substr($e, -1) == '/' ? 1 : ($e[0] != '!' ? 2 : -1));
-			$y = !$x ? ltrim($e, '/') : ($x > 0 ? substr($e, 0, strcspn($e, ' ')) : 0);
-			$e = "<$e>";
-			if (isset($d[$y])) {
-				if (!$x) {
-					$output .= "\n" . str_repeat($string, --$n) . "$e\n" . str_repeat($string, $n);
-				} else {
-					$output .= "\n" . str_repeat($string, $n) . "$e\n" . str_repeat($string, ($x != 1 ? ++$n : $n));
-				}
-				$output .= ltrim($r);
-				continue;
+		$HTML = explode('<', $html);
+		$X = 1;
+		while ($X) {
+			$n = $N;
+			$html = $HTML;
+			if (isset($d[$parent])) {
+				$output .= str_repeat($string, ++$n);
 			}
-			$f = "\n" . str_repeat($string, $n);
-			if (isset($c[$y])) {
-				if (!$x) {
-					$output .= $e . $f . ltrim($r);
-				} else {
+			$output .= ltrim(array_shift($html));
+			for ($i = -1, $j = count($html); ++$i < $j;) {
+				$r = '';
+				list($e, $r) = explode('>', $html[$i]);
+				$x = $e[0] == '/' ? 0 : (substr($e, -1) == '/' ? 1 : ($e[0] != '!' ? 2 : -1));
+				$y = !$x ? ltrim($e, '/') : ($x > 0 ? substr($e, 0, strcspn($e, ' ')) : 0);
+				$e = "<$e>";
+				if (isset($d[$y])) {
+					if (!$x) {
+						if ($n) {
+							$output .= "\n" . str_repeat($string, --$n), "$e\n" . str_repeat($string, $n);
+						} else {
+							++$N;
+							continue 2;
+						}
+					} else {
+						$output .= "\n" . str_repeat($string, $n) . "$e\n" . str_repeat($string, ($x != 1 ? ++$n : $n));
+					}
+					$output .= ltrim($r);
+					continue;
+				}
+				$f = "\n" . str_repeat($string, $n);
+				if (isset($c[$y])) {
+					if (!$x) {
+						$output .= $e . $f . ltrim($r);
+					} else {
+						$output .= $f . $e . $r;
+					}
+				} elseif (isset($b[$y])) {
 					$output .= $f . $e . $r;
+				} elseif (isset($a[$y])) {
+					$output .= $e . $f . ltrim($r);
+				} elseif (!$y) {
+					$output .= $f . $e . $f . ltrim($r);
+				} else {
+					$output .= $e . $r;
 				}
-			} elseif (isset($b[$y])) {
-				$output .= $f . $e . $r;
-			} elseif (isset($a[$y])) {
-				$output .= $e . $f . ltrim($r);
-			} elseif (!$y) {
-				$output .= $f . $e . $f . ltrim($r);
-			} else {
-				$output .= $e . $r;
 			}
+			$X = 0;
 		}
 		$html = preg_replace('`[\n]\s*?[\n]+`', "\n", $output);
 		unset($output);
