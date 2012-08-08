@@ -47,7 +47,7 @@ class htmLawed {
 			'clean_ms_char' => 2,
 			'comment' => 1,
 			'css_expression' => 0,
-			'deny_attribute' => array('title', 'id', 'style', 'on*'),
+			'deny_attribute' => array('title, id, class, style, on*'),
 			//'keep_attributes' => array('href'),
 			'direct_list_nest' => 1,
 			//'elements' => ,
@@ -109,94 +109,94 @@ class htmLawed {
 			$this->config['xml:lang'] = isset($this->config['xml:lang']) ? $this->config['xml:lang'] : 2;
 		}
 		
-		//List of valid, recognized HTML tags
+		//List of valid, recognized HTML tags - uncommented tags are the ones we will accept
 		$element = array(
 			'a' => 1,
-			'abbr' => 1,
-			'acronym' => 1,
-			'address' => 1,
-			'applet' => 1,
-			'area' => 1,
+			//'abbr' => 1,
+			//'acronym' => 1,
+			//'address' => 1,
+			//'applet' => 1,
+			//'area' => 1,
 			'b' => 1,
-			'bdo' => 1,
-			'big' => 1,
-			'blockquote' => 1,
+			//'bdo' => 1,
+			//'big' => 1,
+			//'blockquote' => 1,
 			'br' => 1,
-			'button' => 1,
-			'caption' => 1,
-			'center' => 1,
-			'cite' => 1,
-			'code' => 1,
-			'col' => 1,
-			'colgroup' => 1,
-			'dd' => 1,
-			'del' => 1,
-			'dfn' => 1,
-			'dir' => 1,
+			//'button' => 1,
+			//'caption' => 1,
+			//'center' => 1,
+			//'cite' => 1,
+			//'code' => 1,
+			//'col' => 1,
+			//'colgroup' => 1,
+			//'dd' => 1,
+			//'del' => 1,
+			//'dfn' => 1,
+			//'dir' => 1,
 			'div' => 1,
-			'dl' => 1,
-			'dt' => 1,
+			//'dl' => 1,
+			//'dt' => 1,
 			'em' => 1,
-			'embed' => 1,
-			'fieldset' => 1,
-			'font' => 1,
-			'form' => 1,
+			//'embed' => 1,
+			//'fieldset' => 1,
+			//'font' => 1,
+			//'form' => 1,
 			'h1' => 1,
 			'h2' => 1,
 			'h3' => 1,
 			'h4' => 1,
 			'h5' => 1,
-			'h6' => 1,
-			'hr' => 1,
+			//'h6' => 1,
+			//'hr' => 1,
 			'i' => 1,
-			'iframe' => 1,
-			'img' => 1,
-			'input' => 1,
-			'ins' => 1,
-			'isindex' => 1,
-			'kbd' => 1,
-			'label' => 1,
-			'legend' => 1,
+			//'iframe' => 1,
+			//'img' => 1,
+			//'input' => 1,
+			//'ins' => 1,
+			//'isindex' => 1,
+			//'kbd' => 1,
+			//'label' => 1,
+			//'legend' => 1,
 			'li' => 1,
-			'map' => 1,
-			'menu' => 1,
-			'noscript' => 1,
-			'object' => 1,
+			//'map' => 1,
+			//'menu' => 1,
+			//'noscript' => 1,
+			//'object' => 1,
 			'ol' => 1,
-			'optgroup' => 1,
-			'option' => 1,
+			//'optgroup' => 1,
+			//'option' => 1,
 			'p' => 1,
-			'param' => 1,
-			'pre' => 1,
-			'q' => 1,
-			'rb' => 1,
-			'rbc' => 1,
-			'rp' => 1,
-			'rt' => 1,
-			'rtc' => 1,
-			'ruby' => 1,
-			's' => 1,
-			'samp' => 1,
-			'script' => 1,
-			'select' => 1,
-			'small' => 1,
-			'span' => 1,
-			'strike' => 1,
+			//'param' => 1,
+			//'pre' => 1,
+			//'q' => 1,
+			//'rb' => 1,
+			//'rbc' => 1,
+			//'rp' => 1,
+			//'rt' => 1,
+			//'rtc' => 1,
+			//'ruby' => 1,
+			//'s' => 1,
+			//'samp' => 1,
+			//'script' => 1,
+			//'select' => 1,
+			//'small' => 1,
+			//'span' => 1,
+			//'strike' => 1,
 			'strong' => 1,
-			'sub' => 1,
-			'sup' => 1,
+			//'sub' => 1,
+			//'sup' => 1,
 			'table' => 1,
 			'tbody' => 1,
 			'td' => 1,
-			'textarea' => 1,
-			'tfoot' => 1,
-			'th' => 1,
+			//'textarea' => 1,
+			//'tfoot' => 1,
+			//'th' => 1,
 			'thead' => 1,
 			'tr' => 1,
-			'tt' => 1,
+			//'tt' => 1,
 			'u' => 1,
 			'ul' => 1,
-			'var' => 1
+			//'var' => 1
 		); // 86/deprecated+embed+ruby
 
 		if (!empty($this->config['safe'])) {
@@ -229,7 +229,8 @@ class htmLawed {
 
 		// config attrs
 		$deniedAttributes = !empty($this->config['deny_attribute']) ? str_replace(array("\n", "\r", "\t", ' '), '', $this->config['deny_attribute']) : '';
-		$deniedAttributes = array_flip((isset($deniedAttributes[0]) && $deniedAttributes[0] == '*') ? explode('-', $deniedAttributes) : explode(',', $deniedAttributes . (!empty($this->config['safe']) ? ',on*' : '')));
+		$deniedAttributes = array_flip((isset($deniedAttributes[0]) && $deniedAttributes[0] == '*') ? explode('-', $deniedAttributes[0]) : explode(',', $deniedAttributes[0] . (!empty($this->config['safe']) ? ',on*' : '')));
+
 		if (isset($deniedAttributes['on*'])) {
 			unset($deniedAttributes['on*']);
 			$deniedAttributes += array(
@@ -501,7 +502,7 @@ class htmLawed {
 			's' => 1,
 			'samp' => 1,
 			'small' => 1,
-			//'span' => 1,
+			'span' => 1,
 			'strike' => 1,
 			'strong' => 1,
 			'sub' => 1,
@@ -703,7 +704,7 @@ class htmLawed {
 			'select' => 1,
 			'script' => 1,
 			'small' => 1,
-			//'span' => 1,
+			'span' => 1,
 			'strike' => 1,
 			'strong' => 1,
 			'sub' => 1,
@@ -1473,10 +1474,12 @@ class htmLawed {
 		// tag transform
 		static $deprecatedTags = array(
 			'applet' => 1,
+			'b' => 1,
 			'center' => 1,
 			'dir' => 1,
 			'embed' => 1,
 			'font' => 1,
+			'i' => 1,
 			'isindex' => 1,
 			'menu' => 1,
 			's' => 1,
@@ -1908,10 +1911,10 @@ class htmLawed {
 			'usemap' => 1
 		); // Need scheme check; excludes style, on* & src
 		static $aNU = array(
-			/*'class' => array(
+			'class' => array(
 				'param' => 1,
 				'script' => 1
-			), */
+			), 
 			'dir' => array(
 				'applet' => 1,
 				'bdo' => 1,
@@ -2540,6 +2543,17 @@ class htmLawed {
 	 */
 	private function hl_tag2(&$tag, &$attributes, $t = 1) {
 		// transform tag
+		if ($tag == 'i') {
+			$tag = 'em';
+			return '';
+		}
+
+		if ($tag == 'b') {
+			$tag = 'strong';
+			return '';
+		}
+
+		/*
 		if ($tag == 'center') {
 			$tag = 'div';
 			return 'text-align: center;';
@@ -2548,7 +2562,7 @@ class htmLawed {
 			$tag = 'ul';
 			return '';
 		}
-		/*if ($tag == 's' || $tag == 'strike') {
+		if ($tag == 's' || $tag == 'strike') {
 			$tag = 'span';
 			return 'text-decoration: line-through;';
 		}
