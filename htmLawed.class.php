@@ -432,6 +432,7 @@ class htmLawed {
 	/**
 	 *
 	 */
+	//private function hl_bal($t, $do=1, $in='div') {
 	private function hl_bal($html, $keepBad = 1, $container = 'div') {
 		// balance tags
 		// by content
@@ -609,9 +610,7 @@ class htmLawed {
 		); // Specific - immediate parent-child
 
 		if ($this->config['direct_list_nest']) {
-			$parentChild['ol'] = $parentChild['ul'] += array('ol' => 
-			1, 'ul' => 
-			1);
+			$parentChild['ol'] = $parentChild['ul'] += array('ol' => 1, 'ul' => 1);
 		}
 		$otherElements = array(
 			'address' => array('p' => 1), 
@@ -839,7 +838,7 @@ class htmLawed {
 				}
 			}
 			// get markup
-			if (!preg_match('`^(/?)([a-z1-6]+)([^>]*)>(.*)`sm', $html[$i], $r))
+			if (!preg_match('`^(/?)([a-z1-6]+)([^>]*)>(.*)`sm', $html[$i], $r)) {
 				$x = $html[$i];
 				continue;
 			}
@@ -2613,7 +2612,6 @@ class htmLawed {
 	/**
 	 *
 	 */
-	//private function hl_tidy($t, $w, $p){
 	private function hl_tidy($html, $tidy, $parent) {
 		// Tidy/compact HTM
 		if (strpos(' pre,script,textarea', "$parent,")) {
@@ -2691,17 +2689,19 @@ class htmLawed {
 			'tr' => 1,
 			'ul' => 1,
 		);
-		$output = '';
+
 		$HTML = explode('<', $html);
 		$X = 1;
 		while ($X) {
+			$output = '';
 			$n = $N;
 			$html = $HTML;
 			if (isset($d[$parent])) {
 				$output .= str_repeat($string, ++$n);
 			}
+			
 			$output .= ltrim(array_shift($html));
-			for ($i = -1, $j = count($html); ++$i < $j;) {
+			for ($i=-1, $j=count($html); ++$i<$j;) {
 				$r = '';
 				list($e, $r) = explode('>', $html[$i]);
 				$x = $e[0] == '/' ? 0 : (substr($e, -1) == '/' ? 1 : ($e[0] != '!' ? 2 : -1));
@@ -2710,7 +2710,7 @@ class htmLawed {
 				if (isset($d[$y])) {
 					if (!$x) {
 						if ($n) {
-							$output .= "\n" . str_repeat($string, --$n), "$e\n" . str_repeat($string, $n);
+							$output .= "\n" . str_repeat($string, --$n) . "$e\n" . str_repeat($string, $n);
 						} else {
 							++$N;
 							continue 2;
