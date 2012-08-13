@@ -227,32 +227,43 @@ class htmLawed {
 		//Assign by reference
 		$this->config['elements'] = &$element;
 
-		// config attrs
-		$deniedAttributes = !empty($this->config['deny_attribute']) ? str_replace(array("\n", "\r", "\t", ' '), '', $this->config['deny_attribute']) : '';
-		$deniedAttributes = array_flip((isset($deniedAttributes[0]) && $deniedAttributes[0] == '*') ? explode('-', $deniedAttributes[0]) : explode(',', $deniedAttributes[0] . (!empty($this->config['safe']) ? ',on*' : '')));
+		$jsEvents = array(
+			'onblur' =>  1,
+			'onchange' => 1,
+			'onclick' => 1,
+			'ondblclick' => 1,
+			'onfocus' => 1,
+			'onkeydown' => 1,
+			'onkeypress' => 1,
+			'onkeyup' => 1,
+			'onmousedown' => 1,
+			'onmousemove' => 1,
+			'onmouseout' => 1,
+			'onmouseover' => 1,
+			'onmouseup' => 1,
+			'onreset' => 1,
+			'onselect' => 1,
+			'onsubmit' => 1,
+		);
 
-		if (isset($deniedAttributes['on*'])) {
-			unset($deniedAttributes['on*']);
-			$deniedAttributes += array(
-				'onblur' =>  1,
-				'onchange' => 1,
-				'onclick' => 1,
-				'ondblclick' => 1,
-				'onfocus' => 1,
-				'onkeydown' => 1,
-				'onkeypress' => 1,
-				'onkeyup' => 1,
-				'onmousedown' => 1,
-				'onmousemove' => 1,
-				'onmouseout' => 1,
-				'onmouseover' => 1,
-				'onmouseup' => 1,
-				'onreset' => 1,
-				'onselect' => 1,
-				'onsubmit' => 1,
-			);
+		// config attrs
+		if (isset($this->config['keep_attributes'])) {
+			$allowedAttributes = !empty($this->config['keep_attributes']) ? str_replace(array("\n", "\r", "\t", ' '), '', $this->config['keep_attributes']) : '';
+			$allowedAttributes = array_flip((isset($allowedAttributes[0]) && $allowedAttributes[0] == '*') ? explode('-', $allowedAttributes[0]) : explode(',', $allowedAttributes[0]));	
+			if (isset($allowedAttributes['on*'])) {
+				unset($allowedAttributes['on*']);
+				$allowedAttributes = array_merge($allowedAttributes, $jsEvents);
+			}
+			$this->config['keep_attributes'] = $allowedAttributes;
+		} elseif (isset($this->config['deny_attribute'])) {
+			$deniedAttributes = !empty($this->config['deny_attribute']) ? str_replace(array("\n", "\r", "\t", ' '), '', $this->config['deny_attribute']) : '';
+			$deniedAttributes = array_flip((isset($deniedAttributes[0]) && $deniedAttributes[0] == '*') ? explode('-', $deniedAttributes[0]) : explode(',', $deniedAttributes[0] . (!empty($this->config['safe']) ? ',on*' : '')));
+			if (isset($deniedAttributes['on*'])) {
+				unset($deniedAttributes['on*']);
+				$deniedAttributes = array_merge($deniedAttributes, $jsEvents);
+			}
+			$this->config['deny_attribute'] = $deniedAttributes;
 		}
-		$this->config['deny_attribute'] = $deniedAttributes;
 
 		// config URL
 		$acceptableProtocols = (isset($this->config['schemes'][2]) && strpos($this->config['schemes'], ':')) ? strtolower($this->config['schemes']) : 'href: aim, feed, file, ftp, gopher, http, https, irc, mailto, news, nntp, sftp, ssh, telnet; *:file, http, https';
@@ -1511,7 +1522,7 @@ class htmLawed {
 		}
 
 		// open tag & attr
-		static $aN = array(
+		static $elementSpecificAttr = array(
 			'abbr' => array(
 				'td' => 1,
 				'th' => 1
@@ -1883,7 +1894,7 @@ class htmLawed {
 				'style' => 1
 			)
 		); // Ele-specific
-		static $aNE = array(
+		static $emptyAttr = array(
 			'checked' => 1,
 			'compact' => 1,
 			'declare' => 1,
@@ -2050,7 +2061,7 @@ class htmLawed {
 		); // Univ & exceptions
 
 		if ($this->config['lc_std_val']) {
-			// predef attr vals for $eAL & $aNE ele
+			// predef attr vals for $eAL & $emptyAttr ele
 			static $aNL = array(
 				'all' => 1,
 				'baseline' => 1,
@@ -2122,7 +2133,7 @@ class htmLawed {
 		$depTr = 0;
 		if ($this->config['no_deprecated_attr']) {
 			// dep attr:applicable ele
-			static $aND = array(
+			static $deprecatedAttr = array(
 				'align' => array(
 					'caption' => 1,
 					'div' => 1,
@@ -2201,7 +2212,7 @@ class htmLawed {
 					'th' => 1
 				)
 			);
-			static $eAD = array(
+			static $deprecatedAttrElements = array(
 				'a' => 1,
 				'br' => 1,
 				'caption' => 1,
@@ -2232,7 +2243,7 @@ class htmLawed {
 				'tr' => 1,
 				'ul' => 1
 			);
-			$depTr = isset($eAD[$element]) ? 1 : 0;
+			$depTr = isset($deprecatedAttrElements[$element]) ? 1 : 0;
 		}
 
 		// attr name-vals
@@ -2293,110 +2304,220 @@ class htmLawed {
 		$nfr = 0;
 
 		foreach ($attributes as $key => $value) {
-			if (((isset($this->config['deny_attribute']['*']) ? isset($this->config['deny_attribute'][$key]) : !isset($this->config['deny_attribute'][$key])) && (isset($aN[$key][$element]) or (isset($aNU[$key]) && !isset($aNU[$key][$element]))) && !isset($rl['n'][$key]) && !isset($rl['n']['*'])) or isset($rl[$key])) {
-				if (isset($aNE[$key])) {
-					$value = $key;
-				} elseif (!empty($lcase) && (($element != 'button' || $element != 'input') || $key == 'type')) { // Rather loose but ?not cause issues
-					$value = (isset($aNL[($value2 = strtolower($value))])) ? $value2 : $value;
-				}
-				if ($key == 'style' && !$this->config['style_pass']) {
-					if (false !== strpos($value, '&#')) {
-						static $sC = array(
-							'&#x20;'=>' ',
-							'&#32;'=>' ',
-							'&#x45;'=>'e',
-							'&#69;'=>'e',
-							'&#x65;'=>'e',
-							'&#101;'=>'e',
-							'&#x58;'=>'x',
-							'&#88;'=>'x',
-							'&#x78;'=>'x',
-							'&#120;'=>'x',
-							'&#x50;'=>'p',
-							'&#80;'=>'p',
-							'&#x70;'=>'p',
-							'&#112;'=>'p',
-							'&#x53;'=>'s',
-							'&#83;'=>'s',
-							'&#x73;'=>'s',
-							'&#115;'=>'s',
-							'&#x49;'=>'i',
-							'&#73;'=>'i',
-							'&#x69;'=>'i',
-							'&#105;'=>'i',
-							'&#x4f;'=>'o',
-							'&#79;'=>'o',
-							'&#x6f;'=>'o',
-							'&#111;'=>'o',
-							'&#x4e;'=>'n',
-							'&#78;'=>'n',
-							'&#x6e;'=>'n',
-							'&#110;'=>'n',
-							'&#x55;'=>'u',
-							'&#85;'=>'u',
-							'&#x75;'=>'u',
-							'&#117;'=>'u',
-							'&#x52;'=>'r',
-							'&#82;'=>'r',
-							'&#x72;'=>'r',
-							'&#114;'=>'r',
-							'&#x4c;'=>'l',
-							'&#76;'=>'l',
-							'&#x6c;'=>'l',
-							'&#108;'=>'l',
-							'&#x28;'=>'(',
-							'&#40;'=>'(',
-							'&#x29;'=>')',
-							'&#41;'=>')',
-							'&#x20;'=>':',
-							'&#32;'=>':',
-							'&#x22;'=>'"',
-							'&#34;'=>'"',
-							'&#x27;'=>"'",
-							'&#39;'=>"'",
-							'&#x2f;'=>'/',
-							'&#47;'=>'/',
-							'&#x2a;'=>'*',
-							'&#42;'=>'*',
-							'&#x5c;'=>'\\',
-							'&#92;'=>'\\'
-						);
-						$value = strtr($value, $sC);
+			if (isset($this->config['keep_attributes'])) {
+				if (isset($this->config['keep_attributes']['*']) || isset($this->config['keep_attributes'][$key]) ||
+					isset($rl['n']['*']) ||	isset($rl['n'][$key])
+				) {
+					if (isset($emptyAttr[$key])) {
+						$value = $key;
+					} elseif (!empty($lcase) && (($element != 'button' || $element != 'input') || $key == 'type')) { // Rather loose but ?not cause issues
+						$value = (isset($aNL[($value2 = strtolower($value))])) ? $value2 : $value;
 					}
-					$value = preg_replace_callback('`(url(?:\()(?: )*(?:\'|"|&(?:quot|apos);)?)(.+?)((?:\'|"|&(?:quot|apos);)?(?: )*(?:\)))`iS', array(get_class($this), 'hl_prot'), $value);
-						$value = !$this->config['css_expression'] ? preg_replace('`expression`i', ' ', preg_replace('`\\\\\S|(/|(%2f))(\*|(%2a))`i', ' ', $value)) : $value;
-				} elseif (isset($aNP[$key]) || strpos($key, 'src') !== false || $key[0] == 'o') {
-					$value = str_replace("\xad", ' ', (strpos($value, '&') !== false ? str_replace(array('&#xad;', '&#173;', '&shy;'), ' ', $value) : $value));
-					$value = $this->hl_prot($value, $key);
-					if ($key == 'href') { // X-spam
-						if ($this->config['anti_mail_spam'] && strpos($value, 'mailto:') === 0) {
-							$value = str_replace('@', htmlspecialchars($this->config['anti_mail_spam']), $value);
-						} elseif ($this->config['anti_link_spam']) {
-							$r1 = $this->config['anti_link_spam'][1];
-							if (!empty($r1) && preg_match($r1, $value)) {
-								continue;
-							}
-							$r0 = $this->config['anti_link_spam'][0];
-							if (!empty($r0) && preg_match($r0, $value)) {
-								if (isset($attr['rel'])) {
-									if (!preg_match('`\bnofollow\b`i', $attr['rel'])) {
-										$attr['rel'] .= ' nofollow';
+					if ($key == 'style' && !$this->config['style_pass']) {
+						if (false !== strpos($value, '&#')) {
+							static $sC = array(
+								'&#x20;' => ' ',
+								'&#32;' => ' ',
+								'&#x45;' => 'e',
+								'&#69;' => 'e',
+								'&#x65;' => 'e',
+								'&#101;' => 'e',
+								'&#x58;' => 'x',
+								'&#88;' => 'x',
+								'&#x78;' => 'x',
+								'&#120;' => 'x',
+								'&#x50;' => 'p',
+								'&#80;' => 'p',
+								'&#x70;' => 'p',
+								'&#112;' => 'p',
+								'&#x53;' => 's',
+								'&#83;' => 's',
+								'&#x73;' => 's',
+								'&#115;' => 's',
+								'&#x49;' => 'i',
+								'&#73;' => 'i',
+								'&#x69;' => 'i',
+								'&#105;' => 'i',
+								'&#x4f;' => 'o',
+								'&#79;' => 'o',
+								'&#x6f;' => 'o',
+								'&#111;' => 'o',
+								'&#x4e;' => 'n',
+								'&#78;' => 'n',
+								'&#x6e;' => 'n',
+								'&#110;' => 'n',
+								'&#x55;' => 'u',
+								'&#85;' => 'u',
+								'&#x75;' => 'u',
+								'&#117;' => 'u',
+								'&#x52;' => 'r',
+								'&#82;' => 'r',
+								'&#x72;' => 'r',
+								'&#114;' => 'r',
+								'&#x4c;' => 'l',
+								'&#76;' => 'l',
+								'&#x6c;' => 'l',
+								'&#108;' => 'l',
+								'&#x28;' => '(',
+								'&#40;' => '(',
+								'&#x29;' => ')',
+								'&#41;' => ')',
+								'&#x20;' => ':',
+								'&#32;' => ':',
+								'&#x22;' => '"',
+								'&#34;' => '"',
+								'&#x27;' => "'",
+								'&#39;' => "'",
+								'&#x2f;' => '/',
+								'&#47;' => '/',
+								'&#x2a;' => '*',
+								'&#42;' => '*',
+								'&#x5c;' => '\\',
+								'&#92;' => '\\'
+							);
+							$value = strtr($value, $sC);
+						}
+						$value = preg_replace_callback('`(url(?:\()(?: )*(?:\'|"|&(?:quot|apos);)?)(.+?)((?:\'|"|&(?:quot|apos);)?(?: )*(?:\)))`iS', array(get_class($this), 'hl_prot'), $value);
+							$value = !$this->config['css_expression'] ? preg_replace('`expression`i', ' ', preg_replace('`\\\\\S|(/|(%2f))(\*|(%2a))`i', ' ', $value)) : $value;
+					} elseif (isset($aNP[$key]) || strpos($key, 'src') !== false || $key[0] == 'o') {
+						$value = str_replace("\xad", ' ', (strpos($value, '&') !== false ? str_replace(array('&#xad;', '&#173;', '&shy;'), ' ', $value) : $value));
+						$value = $this->hl_prot($value, $key);
+						if ($key == 'href') { // X-spam
+							if ($this->config['anti_mail_spam'] && strpos($value, 'mailto:') === 0) {
+								$value = str_replace('@', htmlspecialchars($this->config['anti_mail_spam']), $value);
+							} elseif ($this->config['anti_link_spam']) {
+								$r1 = $this->config['anti_link_spam'][1];
+								if (!empty($r1) && preg_match($r1, $value)) {
+									continue;
+								}
+								$r0 = $this->config['anti_link_spam'][0];
+								if (!empty($r0) && preg_match($r0, $value)) {
+									if (isset($attr['rel'])) {
+										if (!preg_match('`\bnofollow\b`i', $attr['rel'])) {
+											$attr['rel'] .= ' nofollow';
+										}
+									} elseif (isset($attributes['rel'])) {
+										if (!preg_match('`\bnofollow\b`i', $attributes['rel'])) {
+											$nfr = 1;
+										}
+									} else {
+										$attr['rel'] = 'nofollow';
 									}
-								} elseif (isset($attributes['rel'])) {
-									if (!preg_match('`\bnofollow\b`i', $attributes['rel'])) {
-										$nfr = 1;
-									}
-								} else {
-									$attr['rel'] = 'nofollow';
 								}
 							}
 						}
 					}
+					if (isset($rl[$key]) && is_array($rl[$key]) && ($value = hl_attrval($value, $rl[$key])) === 0) {
+						continue;
+					}
+					$attr[$key] = str_replace('"', '&quot;', $value);
 				}
-				if (isset($rl[$key]) && is_array($rl[$key]) && ($value = hl_attrval($value, $rl[$key])) === 0) {
-					continue;
+			} elseif (isset($this->config['deny_attribute'])) {
+				if (((isset($this->config['deny_attribute']['*']) ? isset($this->config['deny_attribute'][$key]) : !isset($this->config['deny_attribute'][$key])) && (isset($elementSpecificAttr[$key][$element]) or (isset($aNU[$key]) && !isset($aNU[$key][$element]))) && !isset($rl['n'][$key]) && !isset($rl['n']['*'])) or isset($rl[$key])) {
+					if (isset($emptyAttr[$key])) {
+						$value = $key;
+					} elseif (!empty($lcase) && (($element != 'button' || $element != 'input') || $key == 'type')) { // Rather loose but ?not cause issues
+						$value = (isset($aNL[($value2 = strtolower($value))])) ? $value2 : $value;
+					}
+					if ($key == 'style' && !$this->config['style_pass']) {
+						if (false !== strpos($value, '&#')) {
+							static $sC = array(
+								'&#x20;' => ' ',
+								'&#32;' => ' ',
+								'&#x45;' => 'e',
+								'&#69;' => 'e',
+								'&#x65;' => 'e',
+								'&#101;' => 'e',
+								'&#x58;' => 'x',
+								'&#88;' => 'x',
+								'&#x78;' => 'x',
+								'&#120;' => 'x',
+								'&#x50;' => 'p',
+								'&#80;' => 'p',
+								'&#x70;' => 'p',
+								'&#112;' => 'p',
+								'&#x53;' => 's',
+								'&#83;' => 's',
+								'&#x73;' => 's',
+								'&#115;' => 's',
+								'&#x49;' => 'i',
+								'&#73;' => 'i',
+								'&#x69;' => 'i',
+								'&#105;' => 'i',
+								'&#x4f;' => 'o',
+								'&#79;' => 'o',
+								'&#x6f;' => 'o',
+								'&#111;' => 'o',
+								'&#x4e;' => 'n',
+								'&#78;' => 'n',
+								'&#x6e;' => 'n',
+								'&#110;' => 'n',
+								'&#x55;' => 'u',
+								'&#85;' => 'u',
+								'&#x75;' => 'u',
+								'&#117;' => 'u',
+								'&#x52;' => 'r',
+								'&#82;' => 'r',
+								'&#x72;' => 'r',
+								'&#114;' => 'r',
+								'&#x4c;' => 'l',
+								'&#76;' => 'l',
+								'&#x6c;' => 'l',
+								'&#108;' => 'l',
+								'&#x28;' => '(',
+								'&#40;' => '(',
+								'&#x29;' => ')',
+								'&#41;' => ')',
+								'&#x20;' => ':',
+								'&#32;' => ':',
+								'&#x22;' => '"',
+								'&#34;' => '"',
+								'&#x27;' => "'",
+								'&#39;' => "'",
+								'&#x2f;' => '/',
+								'&#47;' => '/',
+								'&#x2a;' => '*',
+								'&#42;' => '*',
+								'&#x5c;' => '\\',
+								'&#92;' => '\\'
+							);
+							$value = strtr($value, $sC);
+						}
+						$value = preg_replace_callback('`(url(?:\()(?: )*(?:\'|"|&(?:quot|apos);)?)(.+?)((?:\'|"|&(?:quot|apos);)?(?: )*(?:\)))`iS', array(get_class($this), 'hl_prot'), $value);
+							$value = !$this->config['css_expression'] ? preg_replace('`expression`i', ' ', preg_replace('`\\\\\S|(/|(%2f))(\*|(%2a))`i', ' ', $value)) : $value;
+					} elseif (isset($aNP[$key]) || strpos($key, 'src') !== false || $key[0] == 'o') {
+						$value = str_replace("\xad", ' ', (strpos($value, '&') !== false ? str_replace(array('&#xad;', '&#173;', '&shy;'), ' ', $value) : $value));
+						$value = $this->hl_prot($value, $key);
+						if ($key == 'href') { // X-spam
+							if ($this->config['anti_mail_spam'] && strpos($value, 'mailto:') === 0) {
+								$value = str_replace('@', htmlspecialchars($this->config['anti_mail_spam']), $value);
+							} elseif ($this->config['anti_link_spam']) {
+								$r1 = $this->config['anti_link_spam'][1];
+								if (!empty($r1) && preg_match($r1, $value)) {
+									continue;
+								}
+								$r0 = $this->config['anti_link_spam'][0];
+								if (!empty($r0) && preg_match($r0, $value)) {
+									if (isset($attr['rel'])) {
+										if (!preg_match('`\bnofollow\b`i', $attr['rel'])) {
+											$attr['rel'] .= ' nofollow';
+										}
+									} elseif (isset($attributes['rel'])) {
+										if (!preg_match('`\bnofollow\b`i', $attributes['rel'])) {
+											$nfr = 1;
+										}
+									} else {
+										$attr['rel'] = 'nofollow';
+									}
+								}
+							}
+						}
+					}
+					if (isset($rl[$key]) && is_array($rl[$key]) && ($value = hl_attrval($value, $rl[$key])) === 0) {
+						continue;
+					}
+					$attr[$key] = str_replace('"', '&quot;', $value);
 				}
-				$attr[$key] = str_replace('"', '&quot;', $value);
 			}
 		}
 		if ($nfr) {
@@ -2433,7 +2554,7 @@ class htmLawed {
 		if ($depTr) {
 			$c = array();
 			foreach ($attr as $key => $value) {
-				if ($key == 'style' || !isset($aND[$key][$element])) {
+				if ($key == 'style' || !isset($deprecatedAttr[$key][$element])) {
 					continue;
 				}
 				if ($key == 'align') {
