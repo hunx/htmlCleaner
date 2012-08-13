@@ -47,8 +47,8 @@ class htmLawed {
 			'clean_ms_char' => 2,
 			'comment' => 1,
 			'css_expression' => 0,
-			'deny_attribute' => array('title, id, class, style, on*'),
-			//'keep_attributes' => array('href'),
+			//'deny_attribute' => array('title, id, class, style, on*'),
+			'keep_attributes' => array('href'),
 			'direct_list_nest' => 1,
 			//'elements' => ,
 			'hexdec_entity' => 0,
@@ -804,6 +804,23 @@ class htmLawed {
 		// $q seq list of open non-empty ele
 		$output = "";
 		for ($i =- 1, $ci = count($html); ++$i < $ci;) {
+			if (isset($html[($i + 1)])) {
+				//Remove excess spaces and line breaks from the current and next tag element
+				$html[$i] = trim($html[$i]);
+				$html[($i + 1)] = trim($html[($i + 1)]);
+				$html[$i] = str_replace("\n", "", $html[$i]);
+				$html[($i + 1)] = str_replace("\n", "", $html[($i + 1)]);
+
+				//match empty opening tags and see if the next consecutive tag is the same
+				preg_match('@\A[^/][^>]*>([\s\S]+?)\Z@i', $html[$i], $match);
+				if (!isset($match[1]) && strpos($html[$i], "/") === false) {
+					preg_match('@\A([a-zA-Z]*?)[\s>]@i', $html[$i], $tagMatch);
+					if (!empty($tagMatch[1]) && $html[($i + 1)] == '/' . $tagMatch[1] . '>') {
+						unset($html[$i], $html[++$i]);
+						continue;
+					}
+				}
+			}
 			// allowed $ok in parent $p
 			if ($ql = count($q)) {
 				$p = array_pop($q);
@@ -881,6 +898,7 @@ class htmLawed {
 				unset($e);
 				continue;
 			}
+
 			// open tag
 			// $blockLevelElements ele needs $eB ele as child
 			if (isset($blockLevelElements[$e]) && strlen(trim($x))) {
@@ -927,7 +945,7 @@ class htmLawed {
 			// nesting
 			$add = '';
 			$q2 = array();
-			for ($k=-1, $kc=count($q); ++$k<$kc;) {
+			for ($k = -1, $kc = count($q); ++$k < $kc;) {
 				$d = $q[$k];
 				$ok2 = array();
 				if (isset($parentChild[$d])) {
