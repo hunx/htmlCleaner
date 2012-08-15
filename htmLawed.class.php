@@ -47,8 +47,8 @@ class htmLawed {
 			'clean_ms_char' => 2,
 			'comment' => 1,
 			'css_expression' => 0,
-			//'deny_attribute' => array('title, id, class, style, on*'),
-			'keep_attributes' => array('href'),
+			'deny_attribute' => array(/*'title, id, class, style, on*'*/),	//Blacklisted attributes
+			'keep_attribute' => array('href'),	//Whitelisted attributes
 			'direct_list_nest' => 1,
 			//'elements' => ,
 			'hexdec_entity' => 0,
@@ -60,6 +60,7 @@ class htmLawed {
 			'named_entity' => 1,
 			'no_deprecated_attr' => 2,
 			//'parent',
+			'remove_empty' => 1,
 			'safe' => 1,
 			'schemes' => 'href: http, https, mailto',
 			//'show_setting',
@@ -247,15 +248,15 @@ class htmLawed {
 		);
 
 		// config attrs
-		if (isset($this->config['keep_attributes'])) {
-			$allowedAttributes = !empty($this->config['keep_attributes']) ? str_replace(array("\n", "\r", "\t", ' '), '', $this->config['keep_attributes']) : '';
+		if (!empty($this->config['keep_attribute'])) {
+			$allowedAttributes = !empty($this->config['keep_attribute']) ? str_replace(array("\n", "\r", "\t", ' '), '', $this->config['keep_attribute']) : '';
 			$allowedAttributes = array_flip((isset($allowedAttributes[0]) && $allowedAttributes[0] == '*') ? explode('-', $allowedAttributes[0]) : explode(',', $allowedAttributes[0]));	
 			if (isset($allowedAttributes['on*'])) {
 				unset($allowedAttributes['on*']);
 				$allowedAttributes = array_merge($allowedAttributes, $jsEvents);
 			}
-			$this->config['keep_attributes'] = $allowedAttributes;
-		} elseif (isset($this->config['deny_attribute'])) {
+			$this->config['keep_attribute'] = $allowedAttributes;
+		} elseif (!empty($this->config['deny_attribute'])) {
 			$deniedAttributes = !empty($this->config['deny_attribute']) ? str_replace(array("\n", "\r", "\t", ' '), '', $this->config['deny_attribute']) : '';
 			$deniedAttributes = array_flip((isset($deniedAttributes[0]) && $deniedAttributes[0] == '*') ? explode('-', $deniedAttributes[0]) : explode(',', $deniedAttributes[0] . (!empty($this->config['safe']) ? ',on*' : '')));
 			if (isset($deniedAttributes['on*'])) {
@@ -804,20 +805,23 @@ class htmLawed {
 		// $q seq list of open non-empty ele
 		$output = "";
 		for ($i =- 1, $ci = count($html); ++$i < $ci;) {
-			if (isset($html[($i + 1)])) {
-				//Remove excess spaces and line breaks from the current and next tag element
-				$html[$i] = trim($html[$i]);
-				$html[($i + 1)] = trim($html[($i + 1)]);
-				$html[$i] = str_replace("\n", "", $html[$i]);
-				$html[($i + 1)] = str_replace("\n", "", $html[($i + 1)]);
+			//Check whether or not we want to remove empty tags
+			if ($this->config['remove_empty']) {
+				if (isset($html[($i + 1)])) {
+					//Remove excess spaces and line breaks from the current and next tag element
+					$html[$i] = trim($html[$i]);
+					$html[($i + 1)] = trim($html[($i + 1)]);
+					$html[$i] = str_replace(array("\n", "\r", "\t"), "", $html[$i]);
+					$html[($i + 1)] = str_replace(array("\n", "\r", "\t"), "", $html[($i + 1)]);
 
-				//match empty opening tags and see if the next consecutive tag is the same
-				preg_match('@\A[^/][^>]*>([\s\S]+?)\Z@i', $html[$i], $match);
-				if (!isset($match[1]) && strpos($html[$i], "/") === false) {
-					preg_match('@\A([a-zA-Z]*?)[\s>]@i', $html[$i], $tagMatch);
-					if (!empty($tagMatch[1]) && $html[($i + 1)] == '/' . $tagMatch[1] . '>') {
-						unset($html[$i], $html[++$i]);
-						continue;
+					//match empty opening tags and see if the next consecutive tag is the same
+					preg_match('@\A[^/][^>]*>([\s\S]+?)\Z@i', $html[$i], $match);
+					if (!isset($match[1]) && strpos($html[$i], "/") === false) {
+						preg_match('@\A([a-zA-Z]*?)[\s>]@i', $html[$i], $tagMatch);
+						if (!empty($tagMatch[1]) && $html[($i + 1)] == '/' . $tagMatch[1] . '>') {
+							unset($html[$i], $html[++$i]);
+							continue;
+						}
 					}
 				}
 			}
@@ -2320,10 +2324,70 @@ class htmLawed {
 		$rl = isset($this->spec[$element]) ? $this->spec[$element] : array();
 		$attr = array();
 		$nfr = 0;
+		static $sC = array(
+			'&#x20;' => ' ',
+			'&#32;' => ' ',
+			'&#x45;' => 'e',
+			'&#69;' => 'e',
+			'&#x65;' => 'e',
+			'&#101;' => 'e',
+			'&#x58;' => 'x',
+			'&#88;' => 'x',
+			'&#x78;' => 'x',
+			'&#120;' => 'x',
+			'&#x50;' => 'p',
+			'&#80;' => 'p',
+			'&#x70;' => 'p',
+			'&#112;' => 'p',
+			'&#x53;' => 's',
+			'&#83;' => 's',
+			'&#x73;' => 's',
+			'&#115;' => 's',
+			'&#x49;' => 'i',
+			'&#73;' => 'i',
+			'&#x69;' => 'i',
+			'&#105;' => 'i',
+			'&#x4f;' => 'o',
+			'&#79;' => 'o',
+			'&#x6f;' => 'o',
+			'&#111;' => 'o',
+			'&#x4e;' => 'n',
+			'&#78;' => 'n',
+			'&#x6e;' => 'n',
+			'&#110;' => 'n',
+			'&#x55;' => 'u',
+			'&#85;' => 'u',
+			'&#x75;' => 'u',
+			'&#117;' => 'u',
+			'&#x52;' => 'r',
+			'&#82;' => 'r',
+			'&#x72;' => 'r',
+			'&#114;' => 'r',
+			'&#x4c;' => 'l',
+			'&#76;' => 'l',
+			'&#x6c;' => 'l',
+			'&#108;' => 'l',
+			'&#x28;' => '(',
+			'&#40;' => '(',
+			'&#x29;' => ')',
+			'&#41;' => ')',
+			'&#x20;' => ':',
+			'&#32;' => ':',
+			'&#x22;' => '"',
+			'&#34;' => '"',
+			'&#x27;' => "'",
+			'&#39;' => "'",
+			'&#x2f;' => '/',
+			'&#47;' => '/',
+			'&#x2a;' => '*',
+			'&#42;' => '*',
+			'&#x5c;' => '\\',
+			'&#92;' => '\\'
+		);
 
 		foreach ($attributes as $key => $value) {
-			if (isset($this->config['keep_attributes'])) {
-				if (isset($this->config['keep_attributes']['*']) || isset($this->config['keep_attributes'][$key]) ||
+			if (!empty($this->config['keep_attribute'])) {
+				if (isset($this->config['keep_attribute']['*']) || isset($this->config['keep_attribute'][$key]) ||
 					isset($rl['n']['*']) ||	isset($rl['n'][$key])
 				) {
 					if (isset($emptyAttr[$key])) {
@@ -2333,66 +2397,6 @@ class htmLawed {
 					}
 					if ($key == 'style' && !$this->config['style_pass']) {
 						if (false !== strpos($value, '&#')) {
-							static $sC = array(
-								'&#x20;' => ' ',
-								'&#32;' => ' ',
-								'&#x45;' => 'e',
-								'&#69;' => 'e',
-								'&#x65;' => 'e',
-								'&#101;' => 'e',
-								'&#x58;' => 'x',
-								'&#88;' => 'x',
-								'&#x78;' => 'x',
-								'&#120;' => 'x',
-								'&#x50;' => 'p',
-								'&#80;' => 'p',
-								'&#x70;' => 'p',
-								'&#112;' => 'p',
-								'&#x53;' => 's',
-								'&#83;' => 's',
-								'&#x73;' => 's',
-								'&#115;' => 's',
-								'&#x49;' => 'i',
-								'&#73;' => 'i',
-								'&#x69;' => 'i',
-								'&#105;' => 'i',
-								'&#x4f;' => 'o',
-								'&#79;' => 'o',
-								'&#x6f;' => 'o',
-								'&#111;' => 'o',
-								'&#x4e;' => 'n',
-								'&#78;' => 'n',
-								'&#x6e;' => 'n',
-								'&#110;' => 'n',
-								'&#x55;' => 'u',
-								'&#85;' => 'u',
-								'&#x75;' => 'u',
-								'&#117;' => 'u',
-								'&#x52;' => 'r',
-								'&#82;' => 'r',
-								'&#x72;' => 'r',
-								'&#114;' => 'r',
-								'&#x4c;' => 'l',
-								'&#76;' => 'l',
-								'&#x6c;' => 'l',
-								'&#108;' => 'l',
-								'&#x28;' => '(',
-								'&#40;' => '(',
-								'&#x29;' => ')',
-								'&#41;' => ')',
-								'&#x20;' => ':',
-								'&#32;' => ':',
-								'&#x22;' => '"',
-								'&#34;' => '"',
-								'&#x27;' => "'",
-								'&#39;' => "'",
-								'&#x2f;' => '/',
-								'&#47;' => '/',
-								'&#x2a;' => '*',
-								'&#42;' => '*',
-								'&#x5c;' => '\\',
-								'&#92;' => '\\'
-							);
 							$value = strtr($value, $sC);
 						}
 						$value = preg_replace_callback('`(url(?:\()(?: )*(?:\'|"|&(?:quot|apos);)?)(.+?)((?:\'|"|&(?:quot|apos);)?(?: )*(?:\)))`iS', array(get_class($this), 'hl_prot'), $value);
@@ -2430,7 +2434,7 @@ class htmLawed {
 					}
 					$attr[$key] = str_replace('"', '&quot;', $value);
 				}
-			} elseif (isset($this->config['deny_attribute'])) {
+			} elseif (!empty($this->config['deny_attribute'])) {
 				if (((isset($this->config['deny_attribute']['*']) ? isset($this->config['deny_attribute'][$key]) : !isset($this->config['deny_attribute'][$key])) && (isset($elementSpecificAttr[$key][$element]) or (isset($aNU[$key]) && !isset($aNU[$key][$element]))) && !isset($rl['n'][$key]) && !isset($rl['n']['*'])) or isset($rl[$key])) {
 					if (isset($emptyAttr[$key])) {
 						$value = $key;
@@ -2439,66 +2443,7 @@ class htmLawed {
 					}
 					if ($key == 'style' && !$this->config['style_pass']) {
 						if (false !== strpos($value, '&#')) {
-							static $sC = array(
-								'&#x20;' => ' ',
-								'&#32;' => ' ',
-								'&#x45;' => 'e',
-								'&#69;' => 'e',
-								'&#x65;' => 'e',
-								'&#101;' => 'e',
-								'&#x58;' => 'x',
-								'&#88;' => 'x',
-								'&#x78;' => 'x',
-								'&#120;' => 'x',
-								'&#x50;' => 'p',
-								'&#80;' => 'p',
-								'&#x70;' => 'p',
-								'&#112;' => 'p',
-								'&#x53;' => 's',
-								'&#83;' => 's',
-								'&#x73;' => 's',
-								'&#115;' => 's',
-								'&#x49;' => 'i',
-								'&#73;' => 'i',
-								'&#x69;' => 'i',
-								'&#105;' => 'i',
-								'&#x4f;' => 'o',
-								'&#79;' => 'o',
-								'&#x6f;' => 'o',
-								'&#111;' => 'o',
-								'&#x4e;' => 'n',
-								'&#78;' => 'n',
-								'&#x6e;' => 'n',
-								'&#110;' => 'n',
-								'&#x55;' => 'u',
-								'&#85;' => 'u',
-								'&#x75;' => 'u',
-								'&#117;' => 'u',
-								'&#x52;' => 'r',
-								'&#82;' => 'r',
-								'&#x72;' => 'r',
-								'&#114;' => 'r',
-								'&#x4c;' => 'l',
-								'&#76;' => 'l',
-								'&#x6c;' => 'l',
-								'&#108;' => 'l',
-								'&#x28;' => '(',
-								'&#40;' => '(',
-								'&#x29;' => ')',
-								'&#41;' => ')',
-								'&#x20;' => ':',
-								'&#32;' => ':',
-								'&#x22;' => '"',
-								'&#34;' => '"',
-								'&#x27;' => "'",
-								'&#39;' => "'",
-								'&#x2f;' => '/',
-								'&#47;' => '/',
-								'&#x2a;' => '*',
-								'&#42;' => '*',
-								'&#x5c;' => '\\',
-								'&#92;' => '\\'
-							);
+						
 							$value = strtr($value, $sC);
 						}
 						$value = preg_replace_callback('`(url(?:\()(?: )*(?:\'|"|&(?:quot|apos);)?)(.+?)((?:\'|"|&(?:quot|apos);)?(?: )*(?:\)))`iS', array(get_class($this), 'hl_prot'), $value);
