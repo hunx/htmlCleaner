@@ -6,7 +6,7 @@
 
 class htmLawed {
 	/*
-	htmLawed 1.1.14, 8 August 2012
+	htmLawed 1.1.14, 14 August 2012
 	Copyright Santosh Patnaik
 	Dual licensed with LGPL 3 and GPL 2+
 	A PHP Labware internal utility; www.bioinformatics.org/phplabware/internal_utilities/htmLawed
@@ -326,11 +326,11 @@ class htmLawed {
 
 		//Allow CData And/Or Comments
 		if ($this->config['cdata'] || $this->config['comment']) {
-			$html = preg_replace_callback('`<!(?:(?:--.*?--)|(?:\[CDATA\[.*?\]\]))>`sm', array(get_class($this), 'hl_cmtcd'), $html);
+			$html = preg_replace_callback('`<!(?:(?:--.*?--)|(?:\[CDATA\[.*?\]\]))>`sm', array($this, 'hl_cmtcd'), $html);
 		}
 
 		//HTML Entities
-		$html = preg_replace_callback('`&amp;([A-Za-z][A-Za-z0-9]{1,30}|#(?:[0-9]{1,8}|[Xx][0-9A-Fa-f]{1,7}));`', array(get_class($this), 'hl_ent'), str_replace('&', '&amp;', $html));
+		$html = preg_replace_callback('`&amp;([A-Za-z][A-Za-z0-9]{1,30}|#(?:[0-9]{1,8}|[Xx][0-9A-Fa-f]{1,7}));`', array($this, 'hl_ent'), str_replace('&', '&amp;', $html));
 
 		if ($this->config['unique_ids'] && !isset($this->hl_Ids)) {
 			$this->hl_Ids = array();
@@ -348,7 +348,7 @@ class htmLawed {
 
 		// main
 		//Select all the HTML tags in the supplied code
-		$html = preg_replace_callback('`<(?:(?:\s|$)|(?:[^>]*(?:>|$)))|>`m', array(get_class($this), 'hl_tag'), $html);
+		$html = preg_replace_callback('`<(?:(?:\s|$)|(?:[^>]*(?:>|$)))|>`m', array($this, 'hl_tag'), $html);
 		$html = $this->config['balance'] ? $this->hl_bal($html, $this->config['keep_bad'], $this->config['parent']) : $html;
 		$html = (($this->config['cdata'] || $this->config['comment']) && strpos($html, "\x01") !== false) ? str_replace(array("\x01", "\x02", "\x03", "\x04", "\x05"), array('', '', '&', '<', '>'), $html) : $html;
 		$html = $this->config['tidy'] ? $this->hl_tidy($html, $this->config['tidy'], $this->config['parent']) : $html;
@@ -2399,7 +2399,7 @@ class htmLawed {
 						if (false !== strpos($value, '&#')) {
 							$value = strtr($value, $sC);
 						}
-						$value = preg_replace_callback('`(url(?:\()(?: )*(?:\'|"|&(?:quot|apos);)?)(.+?)((?:\'|"|&(?:quot|apos);)?(?: )*(?:\)))`iS', array(get_class($this), 'hl_prot'), $value);
+						$value = preg_replace_callback('`(url(?:\()(?: )*(?:\'|"|&(?:quot|apos);)?)(.+?)((?:\'|"|&(?:quot|apos);)?(?: )*(?:\)))`iS', array($this, 'hl_prot'), $value);
 							$value = !$this->config['css_expression'] ? preg_replace('`expression`i', ' ', preg_replace('`\\\\\S|(/|(%2f))(\*|(%2a))`i', ' ', $value)) : $value;
 					} elseif (isset($aNP[$key]) || strpos($key, 'src') !== false || $key[0] == 'o') {
 						$value = str_replace("\xad", ' ', (strpos($value, '&') !== false ? str_replace(array('&#xad;', '&#173;', '&shy;'), ' ', $value) : $value));
@@ -2446,7 +2446,7 @@ class htmLawed {
 						
 							$value = strtr($value, $sC);
 						}
-						$value = preg_replace_callback('`(url(?:\()(?: )*(?:\'|"|&(?:quot|apos);)?)(.+?)((?:\'|"|&(?:quot|apos);)?(?: )*(?:\)))`iS', array(get_class($this), 'hl_prot'), $value);
+						$value = preg_replace_callback('`(url(?:\()(?: )*(?:\'|"|&(?:quot|apos);)?)(.+?)((?:\'|"|&(?:quot|apos);)?(?: )*(?:\)))`iS', array($this, 'hl_prot'), $value);
 							$value = !$this->config['css_expression'] ? preg_replace('`expression`i', ' ', preg_replace('`\\\\\S|(/|(%2f))(\*|(%2a))`i', ' ', $value)) : $value;
 					} elseif (isset($aNP[$key]) || strpos($key, 'src') !== false || $key[0] == 'o') {
 						$value = str_replace("\xad", ' ', (strpos($value, '&') !== false ? str_replace(array('&#xad;', '&#173;', '&shy;'), ' ', $value) : $value));
