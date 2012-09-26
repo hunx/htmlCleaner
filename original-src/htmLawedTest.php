@@ -323,7 +323,7 @@ tRs = {
  },
  adBtn: function(){
   var textareas = document.getElementsByTagName('textarea');
-  for(var i = 0; i < textareas.length; i++){	
+  for(var i = 0; i < textareas.length; i++){  
    var txtclass=textareas[i].className;
    if(txtclass.substring(0,tRs.resizeClass.length)==tRs.resizeClass ||
    txtclass.substring(txtclass.length -tRs.resizeClass.length)==tRs.resizeClass){
@@ -334,7 +334,7 @@ tRs = {
     a.title = 'click-drag to resize textarea'
     tRs.adEv(a, 'mousedown', tRs.initResize);
     textareas[i].parentNode.appendChild(a);
-   }	
+   }  
   }
  },
  initResize: function(event){
@@ -364,7 +364,7 @@ tRs = {
   if(typeof event == 'undefined'){
    event = window.event;
   }
-	if(tRs.formEl.nodeName.toLowerCase() == 'textarea'){
+  if(tRs.formEl.nodeName.toLowerCase() == 'textarea'){
    tRs.formEl.style.height = event.clientY - tRs.formEl.startY + tRs.formEl.startHeight + 'px';
   }
  },
