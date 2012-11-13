@@ -318,10 +318,40 @@ class htmLawed {
 		$html = preg_replace('`[\x00-\x08\x0b-\x0c\x0e-\x1f]`', '', $html);
 
 		//Clean out any microsoft characters
-		if ($this->config['clean_ms_char']) {
-			$msChars = array("\x7f" => '', "\x80" => '&#8364;', "\x81" => '', "\x83" => '&#402;', "\x85" => '&#8230;', "\x86" => '&#8224;', "\x87" => '&#8225;', "\x88" => '&#710;', "\x89" => '&#8240;', "\x8a" => '&#352;', "\x8b" => '&#8249;', "\x8c" => '&#338;', "\x8d" => '', "\x8e" => '&#381;', "\x8f" => '', "\x90" => '', "\x95" => '&#8226;', "\x96" => '&#8211;', "\x97" => '&#8212;', "\x98" => '&#732;', "\x99" => '&#8482;', "\x9a" => '&#353;', "\x9b" => '&#8250;', "\x9c" => '&#339;', "\x9d" => '', "\x9e" => '&#382;', "\x9f" => '&#376;');
-			$msChars = $msChars + ($this->config['clean_ms_char'] == 1 ? array("\x82" => '&#8218;', "\x84" => '&#8222;', "\x91" => '&#8216;', "\x92" => '&#8217;', "\x93" => '&#8220;', "\x94" => '&#8221;') : array("\x82" => '\'', "\x84" => '"', "\x91" => '\'', "\x92" => '\'', "\x93" => '"', "\x94" => '"'));
-			$html = strtr($html, $msChars);
+		if (!empty($this->config['clean_ms_char'])) {
+			/**
+			 * Note: This diverges from the htmLawed standard method to prevent breaking UTF-8
+			 */
+
+			//Convert Microsoft smarty quotes to boring quotes
+			$quotes = array(
+				"\xC2\xAB"     => '"', // (U+00AB) in UTF-8
+				"\xC2\xBB"     => '"', // (U+00BB) in UTF-8
+				"\xE2\x80\x98" => "'", // (U+2018) in UTF-8
+				"\xE2\x80\x99" => "'", // (U+2019) in UTF-8
+				"\xE2\x80\x9A" => "'", // (U+201A) in UTF-8
+				"\xE2\x80\x9B" => "'", // (U+201B) in UTF-8
+				"\xE2\x80\x9C" => '"', // (U+201C) in UTF-8
+				"\xE2\x80\x9D" => '"', // (U+201D) in UTF-8
+				"\xE2\x80\x9E" => '"', // (U+201E) in UTF-8
+				"\xE2\x80\x9F" => '"', // (U+201F) in UTF-8
+				"\xE2\x80\xB9" => "'", // (U+2039) in UTF-8
+				"\xE2\x80\xBA" => "'", // (U+203A) in UTF-8
+			);
+			$html = strtr($html, $quotes);
+
+			//Taken from http://www.php.net/manual/en/function.strtr.php#40253
+			$badlatin1_cp1252_to_htmlent = array(
+			    '\x80'=>'&#x20AC;', '\x81'=>'?', '\x82'=>'&#x201A;', '\x83'=>'&#x0192;',
+			    '\x84'=>'&#x201E;', '\x85'=>'&#x2026;', '\x86'=>'&#x2020;', '\x87'=>'&#x2021;',
+			    '\x88'=>'&#x02C6;', '\x89'=>'&#x2030;', '\x8A'=>'&#x0160;', '\x8B'=>'&#x2039;',
+			    '\x8C'=>'&#x0152;', '\x8D'=>'?', '\x8E'=>'&#x017D;', '\x8F'=>'?',
+			    '\x90'=>'?', '\x91'=>'&#x2018;', '\x92'=>'&#x2019;', '\x93'=>'&#x201C;',
+			    '\x94'=>'&#x201D;', '\x95'=>'&#x2022;', '\x96'=>'&#x2013;', '\x97'=>'&#x2014;',
+			    '\x98'=>'&#x02DC;', '\x99'=>'&#x2122;', '\x9A'=>'&#x0161;', '\x9B'=>'&#x203A;',
+			    '\x9C'=>'&#x0153;', '\x9D'=>'?', '\x9E'=>'&#x017E;', '\x9F'=>'&#x0178;'
+			);
+			$html = strtr($html, $badlatin1_cp1252_to_htmlent);
 		}
 
 		//Allow CData And/Or Comments
