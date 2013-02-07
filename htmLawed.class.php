@@ -6,7 +6,7 @@
 
 class htmLawed {
 	/*
-	htmLawed 1.1.14, 14 August 2012
+	htmLawed 1.1.14, 17 September 2012
 	Copyright Santosh Patnaik
 	Dual licensed with LGPL 3 and GPL 2+
 	A PHP Labware internal utility; www.bioinformatics.org/phplabware/internal_utilities/htmLawed
@@ -47,8 +47,8 @@ class htmLawed {
 			'clean_ms_char' => 2,
 			'comment' => 1,
 			'css_expression' => 0,
-			'deny_attribute' => array(/*'title, id, class, style, on*'*/),	//Blacklisted attributes
-			'keep_attribute' => array('href'),	//Whitelisted attributes
+			'deny_attribute' => '',	/*'title, id, class, style, on*'*/ //Blacklisted attributes
+			'keep_attribute' => 'href',	//Whitelisted attributes
 			'direct_list_nest' => 1,
 			//'elements' => ,
 			'hexdec_entity' => 0,
@@ -66,6 +66,7 @@ class htmLawed {
 			//'show_setting',
 			//'style_pass' => 0,
 			'tidy' => true,
+			'utf8_encode' => false,
 			'unique_ids' => 0,
 			//'valid_xhtml' => true,
 			'xml:lang' => 0,
@@ -103,7 +104,13 @@ class htmLawed {
 		if (empty($this->html)) {
 			return '';
 		}
-		$html = $this->html;
+
+		if ($this->config['utf8_encode']) {
+			$html = utf8_encode($this->html);
+		} else {
+			$html = $this->html;
+		}
+
 		if (!empty($this->config['valid_xhtml'])) {
 			$this->config['elements'] = empty($this->config['elements']) ? '*-center-dir-font-isindex-menu-s-strike-u' : $this->config['elements'];
 			$this->config['make_tag_strict'] = isset($this->config['make_tag_strict']) ? $this->config['make_tag_strict'] : 2;
@@ -203,28 +210,32 @@ class htmLawed {
 		if (!empty($this->config['safe'])) {
 			unset($element['applet'], $element['embed'], $element['iframe'], $element['object'], $element['script']);
 		}
-		$passedElements = !empty($this->config['elements']) ? str_replace(array("\n", "\r", "\t", ' '), '', $this->config['elements']) : '*';
-		if ($passedElements == '-*') {
-			$element = array();
-		} elseif (strpos($passedElements, '*') === false) {
-			$element = array_flip(explode(',', $passedElements));
-		} else {
-			if (isset($passedElements[1])) {
-				preg_match_all('`(?:^|-|\+)[^\-+]+?(?=-|\+|$)`', $passedElements, $matches, PREG_SET_ORDER);
-				for ($i = count($matches); --$i >= 0;) {
-					$matches[$i] = $matches[$i][0];
-				}
-				foreach ($matches as $match) {
-					if ($match[0] == '+') {
-						$element[substr($match, 1)] = 1;
+
+		$passedElements = $allowedAttributes = $deniedAttributes = $acceptableProtocols = '';
+
+		if (isset($this->config['elements']) && !is_array($this->config['elements'])) {
+			$passedElements = !empty($this->config['elements']) ? str_replace(array("\n", "\r", "\t", ' '), '', $this->config['elements']) : '*';
+			if ($passedElements == '-*') {
+				$element = array();
+			} elseif (strpos($passedElements, '*') === false) {
+				$element = array_flip(explode(',', $passedElements));
+			} else {
+				if (isset($passedElements[1])) {
+					preg_match_all('`(?:^|-|\+)[^\-+]+?(?=-|\+|$)`', $passedElements, $matches, PREG_SET_ORDER);
+					for ($i = count($matches); --$i >= 0;) {
+						$matches[$i] = $matches[$i][0];
 					}
-					if ($match[0] == '-' && isset($element[($match = substr($match, 1))]) && !in_array('+'. $match, $matches)) {
-						unset($element[$match]);
+					foreach ($matches as $match) {
+						if ($match[0] == '+') {
+							$element[substr($match, 1)] = 1;
+						}
+						if ($match[0] == '-' && isset($element[($match = substr($match, 1))]) && !in_array('+'. $match, $matches)) {
+							unset($element[$match]);
+						}
 					}
 				}
 			}
 		}
-
 		//Assign by reference
 		$this->config['elements'] = &$element;
 
@@ -248,17 +259,17 @@ class htmLawed {
 		);
 
 		// config attrs
-		if (!empty($this->config['keep_attribute'])) {
+		if (!empty($this->config['keep_attribute']) && !is_array($this->config['keep_attribute'])) {
 			$allowedAttributes = !empty($this->config['keep_attribute']) ? str_replace(array("\n", "\r", "\t", ' '), '', $this->config['keep_attribute']) : '';
-			$allowedAttributes = array_flip((isset($allowedAttributes[0]) && $allowedAttributes[0] == '*') ? explode('-', $allowedAttributes[0]) : explode(',', $allowedAttributes[0]));	
+			$allowedAttributes = array_flip((isset($allowedAttributes) && $allowedAttributes == '*') ? explode('-', $allowedAttributes) : explode(',', $allowedAttributes));
 			if (isset($allowedAttributes['on*'])) {
 				unset($allowedAttributes['on*']);
 				$allowedAttributes = array_merge($allowedAttributes, $jsEvents);
 			}
 			$this->config['keep_attribute'] = $allowedAttributes;
-		} elseif (!empty($this->config['deny_attribute'])) {
+		} elseif (!empty($this->config['deny_attribute']) && !is_array($this->config['deny_attribute'])) {
 			$deniedAttributes = !empty($this->config['deny_attribute']) ? str_replace(array("\n", "\r", "\t", ' '), '', $this->config['deny_attribute']) : '';
-			$deniedAttributes = array_flip((isset($deniedAttributes[0]) && $deniedAttributes[0] == '*') ? explode('-', $deniedAttributes[0]) : explode(',', $deniedAttributes[0] . (!empty($this->config['safe']) ? ',on*' : '')));
+			$deniedAttributes = array_flip((isset($deniedAttributes) && $deniedAttributes == '*') ? explode('-', $deniedAttributes) : explode(',', $deniedAttributes . (!empty($this->config['safe']) ? ',on*' : '')));
 			if (isset($deniedAttributes['on*'])) {
 				unset($deniedAttributes['on*']);
 				$deniedAttributes = array_merge($deniedAttributes, $jsEvents);
@@ -2517,26 +2528,26 @@ class htmLawed {
 			$attr['rel'] = isset($attr['rel']) ? $attr['rel']. ' nofollow' : 'nofollow';
 		}
 
-		// rqd attr
-		static $eAR = array(
-			'area'=>array('alt'=>'area'),
-			'bdo'=>array('dir'=>'ltr'), 
-			'form'=>array('action'=>''), 
-			'img'=>array(
-				'src'=>'', 
-				'alt'=>'image'
+		// required attributes
+		static $requiredAttr = array(
+			'area' => array('alt' => 'area'),
+			'bdo' => array('dir' => 'ltr'),
+			'form' => array('action' => ''),
+			'img' => array(
+				'src' => '',
+				'alt' => 'image'
 			), 
-			'map'=>array('name'=>''), 
-			'optgroup'=>array('label'=>''), 
-			'param'=>array('name'=>''), 
-			'script'=>array('type'=>'text/javascript'), 
-			'textarea'=>array(
-				'rows'=>'10', 
-				'cols'=>'50'
+			'map' => array('name' => ''),
+			'optgroup' => array('label' => ''),
+			'param' => array('name' => ''),
+			'script' => array('type' => 'text/javascript'),
+			'textarea' => array(
+				'rows' => '10',
+				'cols' => '50'
 			)
 		);
-		if (isset($eAR[$element])) {
-			foreach ($eAR[$element] as $key => $value) {
+		if (isset($requiredAttr[$element])) {
+			foreach ($requiredAttr[$element] as $key => $value) {
 				if (!isset($attr[$key])) { 
 					$attr[$key] = isset($value[0]) ? $value : $key;
 				}
