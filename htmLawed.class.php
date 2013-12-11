@@ -6,14 +6,14 @@
 
 class htmLawed {
 	/*
-	htmLawed 1.1.14, 17 September 2012
+	htmLawed 1.1.16, 29 August 2013
 	Copyright Santosh Patnaik
 	Dual licensed with LGPL 3 and GPL 2+
 	A PHP Labware internal utility; www.bioinformatics.org/phplabware/internal_utilities/htmLawed
 	See htmLawed_README.txt/htm
 	*/
 
-	private $version = '1.1.14';
+	private $version = '1.1.16';
 	private $hl_Ids;
 	private $html;
 	private $config;
@@ -51,6 +51,8 @@ class htmLawed {
 			'keep_attribute' => 'href',	//Whitelisted attributes
 			'direct_list_nest' => 1,
 			//'elements' => ,
+			'add_tag' => '',	//Allows for on-the-fly whitelisting of html tags
+			'remove_tag' => '',	//Allows for on-the-fly blacklisting of html tags
 			'hexdec_entity' => 0,
 			//'hook',
 			//'hook_tag',
@@ -117,7 +119,7 @@ class htmLawed {
 			$this->config['xml:lang'] = isset($this->config['xml:lang']) ? $this->config['xml:lang'] : 2;
 		}
 		
-		//List of valid, recognized HTML tags - uncommented tags are the ones we will accept
+		//List of valid, recognized HTML tags - uncommented tags are the ones we will accept by default
 		$element = array(
 			'a' => 1,
 			//'abbr' => 1,
@@ -206,6 +208,25 @@ class htmLawed {
 			'ul' => 1,
 			//'var' => 1
 		); // 86/deprecated+embed+ruby
+
+		/**
+		 * Note: This diverges from the htmLawed standard method to allow on the fly
+		 * blacklisting and whitelisting of html tags
+		 */
+		if (!empty($this->config['add_tag'])) {
+			foreach (explode(',', $this->config['add_tag']) as $new_element) {
+				$new_element = trim($new_element);
+				$element[$new_element] = 1;
+			}
+		}
+		if (!empty($this->config['remove_tag'])) {
+			foreach (explode(',', $this->config['remove_tag']) as $new_element) {
+				$new_element = trim($new_element);
+				if (isset($element[$new_element])) {
+					unset($element[$new_element]);
+				}
+			}
+		}
 
 		if (!empty($this->config['safe'])) {
 			unset($element['applet'], $element['embed'], $element['iframe'], $element['object'], $element['script']);
@@ -1393,7 +1414,7 @@ class htmLawed {
 			return "{$b}{$attrValue}{$a}";
 		}
 		// All ok, frag, query, param
-		if (preg_match('`^([a-z\d\-+.&#;]+?)(:|&#(58|x3a);|%3a|\\\\0{0,4}3a).`i', $attrValue, $match) && !isset($attrName[strtolower($match[1])])) {
+		if (preg_match('`^([^:?[@!$()*,=/\'\]]+?)(:|&#(58|x3a);|%3a|\\\\0{0,4}3a).`i', $attrValue, $match) && !isset($attrName[strtolower($match[1])])) {
 			// Denied prot
 			return "{$b}{$denied}{$attrValue}{$a}";
 		}
@@ -2742,12 +2763,15 @@ class htmLawed {
 		if (strpos(' pre,script,textarea', "$parent,")) {
 			return $html;
 		}
-		$html = str_replace(' </', '</', 
+		//$html = str_replace(' </', '</', 	//1.1.14
+		$html = preg_replace('`\s+`', ' ',	//1.1.16
 			//item's 2 and 3 get rid of spaces/tabs and then excessive line-breaks. in that order.
 			//items 1 and 4 select items.
-			preg_replace(array('`(<\w[^>]*(?<!/)>)\s+`', '`[ \t]+`', '`[\n\r][\n\r]+`', '`(<\w[^>]*(?<!/)>) `'), array(' $1', ' ', "\n\n", '$1'), 
-				preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'), 
-					create_function('$match', 'return $match[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $match[3]). $match[4];'), 
+			//preg_replace(array('`(<\w[^>]*(?<!/)>)\s+`', '`[ \t]+`', '`[\n\r][\n\r]+`', '`(<\w[^>]*(?<!/)>) `'), array(' $1', ' ', "\n\n", '$1'), 	//1.1.14
+				/*preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'),*/ 	//1.1.14
+				preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'),		//1.1.16
+					//create_function('$match', 'return $match[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $match[3]). $match[4];'), 	//1.1.14
+					  create_function('$match', 'return $match[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $match[3]). $match[4];'),		//1.1.16
 					$html
 				)
 			)
@@ -2764,6 +2788,7 @@ class htmLawed {
 			'button' => 1,
 			'input' => 1,
 			'option' => 1,
+			'param' => 1,
 		);
 		$c = array(
 			'caption' => 1,
@@ -2843,29 +2868,29 @@ class htmLawed {
 					} else {
 						$output .= "\n" . str_repeat($string, $n) . "$e\n" . str_repeat($string, ($x != 1 ? ++$n : $n));
 					}
-					$output .= ltrim($r);
+					$output .= $r;
 					continue;
 				}
 				$f = "\n" . str_repeat($string, $n);
 				if (isset($c[$y])) {
 					if (!$x) {
-						$output .= $e . $f . ltrim($r);
+						$output .= $e . $f . $r;
 					} else {
 						$output .= $f . $e . $r;
 					}
 				} elseif (isset($b[$y])) {
 					$output .= $f . $e . $r;
 				} elseif (isset($a[$y])) {
-					$output .= $e . $f . ltrim($r);
+					$output .= $e . $f . $r;
 				} elseif (!$y) {
-					$output .= $f . $e . $f . ltrim($r);
+					$output .= $f . $e . $f . $r;
 				} else {
 					$output .= $e . $r;
 				}
 			}
 			$X = 0;
 		}
-		$html = preg_replace('`[\n]\s*?[\n]+`', "\n", $output);
+		$html = str_replace(array("\n ", " \n"), "\n", preg_replace('`[\n]\s*?[\n]+`', "\n", $output));
 		unset($output);
 		if (($l = strpos(" $tidy", 'r') ? (strpos(" $tidy", 'n') ? "\r\n" : "\r") : 0)) {
 			$html = str_replace("\n", $l, $html);

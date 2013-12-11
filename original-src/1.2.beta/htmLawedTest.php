@@ -2,7 +2,7 @@
 
 /*
 htmLawedTest.php, 28 May 2013
-htmLawed 1.1.16, 29 August 2013
+htmLawed 1.2.beta.2, 9 June 2013
 Copyright Santosh Patnaik
 Dual licensed with LGPL 3 and GPL 2+
 A PHP Labware internal utility - http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed
@@ -325,7 +325,7 @@ tRs = {
  },
  adBtn: function(){
   var textareas = document.getElementsByTagName('textarea');
-  for(var i = 0; i < textareas.length; i++){
+  for(var i = 0; i < textareas.length; i++){	
    var txtclass=textareas[i].className;
    if(txtclass.substring(0,tRs.resizeClass.length)==tRs.resizeClass ||
    txtclass.substring(txtclass.length -tRs.resizeClass.length)==tRs.resizeClass){
@@ -336,7 +336,7 @@ tRs = {
     a.title = 'click-drag to resize textarea'
     tRs.adEv(a, 'mousedown', tRs.initResize);
     textareas[i].parentNode.appendChild(a);
-   }
+   }	
   }
  },
  initResize: function(event){

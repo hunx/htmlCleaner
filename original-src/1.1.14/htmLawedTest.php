@@ -1,8 +1,8 @@
 <?php
 
 /*
-htmLawedTest.php, 28 May 2013
-htmLawed 1.1.16, 29 August 2013
+htmLawedTest.php, 8 August 2012
+htmLawed 1.1.14, 8 August 2012
 Copyright Santosh Patnaik
 Dual licensed with LGPL 3 and GPL 2+
 A PHP Labware internal utility - http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed
@@ -262,6 +262,9 @@ function sndUnproc(){
  var i = document.getElementById('text');
  if(!i){return;}
  i = i.value;
+ i = i.replace(/>/g, '&gt;');
+ i = i.replace(/</g, '&lt;');
+ i = i.replace(/"/g, '&quot;');
  var w = window.open('htmLawedTest.php?pre=1', 'hlprehtm');
  var f = document.createElement('form');
  f.enctype = 'application/x-www-form-urlencoded';
@@ -269,14 +272,10 @@ function sndUnproc(){
  f.acceptCharset = '<?php echo htmlspecialchars($_POST['enc']); ?>';
  if(f.style){f.style.display = 'none';}
  else{f.visibility = 'hidden';}
- f.innerHTML = '<p style="display:none;"><input style="display:none;" type="hidden" name="token" id="token" value="<?php echo $token; ?>" /><input style="display:none;" type="hidden" name="<?php echo htmlspecialchars($_sid); ?>" id="<?php echo htmlspecialchars($_sid); ?>" value="' + readCookie('<?php echo htmlspecialchars($_sid); ?>') + '" /></p>';
+ f.innerHTML = '<p style="display:none;"><input style="display:none;" type="hidden" name="token" id="token" value="<?php echo $token; ?>" /><input style="display:none;" type="hidden" name="<?php echo htmlspecialchars($_sid); ?>" id="<?php echo htmlspecialchars($_sid); ?>" value="' + readCookie('<?php echo htmlspecialchars($_sid); ?>') + '" /><input style="display:none;" type="hidden" name="inputH" id="inputH" value="'+ i+ '" /></p>';
  f.action = 'htmLawedTest.php?pre=1';
  f.target = 'hlprehtm';
  f.method = 'post';
- var t = document.createElement('textarea');
- t.name = 'inputH';
- t.value = i;
- f.appendChild(t);
  var b = document.getElementsByTagName('body')[0];
  b.appendChild(f);
  f.submit();
@@ -286,6 +285,9 @@ function sndValidn(id, type){
  var i = document.getElementById(id);
  if(!i){return;}
  i = i.value;
+ i = i.replace(/>/g, '&gt;');
+ i = i.replace(/</g, '&lt;');
+ i = i.replace(/"/g, '&quot;');
  var w = window.open('http://validator.w3.org/check', 'validate'+id+type);
  var f = document.createElement('form');
  f.enctype = 'application/x-www-form-urlencoded';
@@ -293,13 +295,9 @@ function sndValidn(id, type){
  f.acceptCharset = '<?php echo htmlspecialchars($_POST['enc']); ?>';
  if(f.style){f.style.display = 'none';}
  else{f.visibility = 'hidden';}
- f.innerHTML = '<p style="display:none;"><input style="display:none;" type="hidden" name="prefill" id="prefill" value="1" /><input style="display:none;" type="hidden" name="prefill_doctype" id="prefill_doctype" value="'+ type+ '" /><input style="display:none;" type="hidden" name="group" id="group" value="1" /><input type="hidden" name="ss" id="ss" value="1" /></p>';
+ f.innerHTML = '<p style="display:none;"><input style="display:none;" type="hidden" name="fragment" id="fragment" value="'+ i+ '" /><input style="display:none;" type="hidden" name="prefill" id="prefill" value="1" /><input style="display:none;" type="hidden" name="prefill_doctype" id="prefill_doctype" value="'+ type+ '" /><input style="display:none;" type="hidden" name="group" id="group" value="1" /><input type="hidden" name="ss" id="ss" value="1" /></p>';
  f.action = 'http://validator.w3.org/check';
  f.target = 'validate'+id+type;
- var t = document.createElement('textarea');
- t.name = 'fragment';
- t.value = i;
- f.appendChild(t);
  var b = document.getElementsByTagName('body')[0];
  b.appendChild(f);
  f.submit();
@@ -325,7 +323,7 @@ tRs = {
  },
  adBtn: function(){
   var textareas = document.getElementsByTagName('textarea');
-  for(var i = 0; i < textareas.length; i++){
+  for(var i = 0; i < textareas.length; i++){  
    var txtclass=textareas[i].className;
    if(txtclass.substring(0,tRs.resizeClass.length)==tRs.resizeClass ||
    txtclass.substring(txtclass.length -tRs.resizeClass.length)==tRs.resizeClass){
@@ -336,7 +334,7 @@ tRs = {
     a.title = 'click-drag to resize textarea'
     tRs.adEv(a, 'mousedown', tRs.initResize);
     textareas[i].parentNode.appendChild(a);
-   }
+   }  
   }
  },
  initResize: function(event){
@@ -366,7 +364,7 @@ tRs = {
   if(typeof event == 'undefined'){
    event = window.event;
   }
-	if(tRs.formEl.nodeName.toLowerCase() == 'textarea'){
+  if(tRs.formEl.nodeName.toLowerCase() == 'textarea'){
    tRs.formEl.style.height = event.clientY - tRs.formEl.startY + tRs.formEl.startHeight + 'px';
   }
  },
