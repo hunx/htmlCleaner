@@ -2768,12 +2768,11 @@ class htmLawed {
 			//item's 2 and 3 get rid of spaces/tabs and then excessive line-breaks. in that order.
 			//items 1 and 4 select items.
 			//preg_replace(array('`(<\w[^>]*(?<!/)>)\s+`', '`[ \t]+`', '`[\n\r][\n\r]+`', '`(<\w[^>]*(?<!/)>) `'), array(' $1', ' ', "\n\n", '$1'), 	//1.1.14
-				/*preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'),*/ 	//1.1.14
-				preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'),		//1.1.16
-					//create_function('$match', 'return $match[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $match[3]). $match[4];'), 	//1.1.14
-					  create_function('$match', 'return $match[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $match[3]). $match[4];'),		//1.1.16
-					$html
-				)
+			/*preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'),*/ 	//1.1.14
+			preg_replace_callback(array('`(<(!\[CDATA\[))(.+?)(\]\]>)`sm', '`(<(!--))(.+?)(-->)`sm', '`(<(pre|script|textarea)[^>]*?>)(.+?)(</\2>)`sm'),		//1.1.16
+				//create_function('$match', 'return $match[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $match[3]). $match[4];'), 	//1.1.14
+				  create_function('$match', 'return $match[1]. str_replace(array("<", ">", "\n", "\r", "\t", " "), array("\x01", "\x02", "\x03", "\x04", "\x05", "\x07"), $match[3]). $match[4];'),		//1.1.16
+				$html
 			)
 		);
 
